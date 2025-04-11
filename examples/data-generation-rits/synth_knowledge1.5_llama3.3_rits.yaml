@@ -49,7 +49,7 @@
   block_config:
     block_name: rename_to_document_column
     columns_map:
-      document: icl_document
+      document: raw_document
       summary: document
 
 - block_type: LLMBlock
