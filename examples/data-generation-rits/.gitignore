@@ -1,3 +1,5 @@
 /model_comparison*.md*
 /model_output*.md*
 /generated_data*.jsonl*
+Tmp*/
+tmp*/
