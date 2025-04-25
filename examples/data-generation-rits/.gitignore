@@ -2,5 +2,6 @@
 /model_output*.md*
 /seed_data*.jsonl*
 /generated_data*.jsonl*
+/generic_data*.jsonl*
 Tmp*/
 tmp*/
