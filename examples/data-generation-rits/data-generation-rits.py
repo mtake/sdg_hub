@@ -157,8 +157,8 @@ if sample_seed_data:
 # ### Utilities for Generated Data
 
 # %%
-def to_generic(generated_data: Dataset) -> Dataset:
-    generic_datum_list: list[dict[str, any]] = []
+def to_messages(generated_data: Dataset) -> Dataset:
+    messages_list: list[dict[str, any]] = []
     for generated_datum in generated_data:
         user = generated_datum['question']
         assistant = generated_datum['response']
@@ -166,9 +166,9 @@ def to_generic(generated_data: Dataset) -> Dataset:
             {"role": "user", "content": user},
             {"role": "assistant", "content": assistant},
         ]
-        generic_datum_list.append({"messages": messages})
-    generic_data = Dataset.from_list(generic_datum_list)
-    return generic_data
+        messages_list.append({"messages": messages})
+    messages_data = Dataset.from_list(messages_list)
+    return messages_data
 
 def get_dataset_type(generated_data_i: dict[str, any]) -> str:
     _dataset_type = generated_data_i.get('dataset_type', None)
@@ -290,12 +290,12 @@ if generate_data_with_phi4:
     generated_data_phi4.to_json(generated_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_phi4}", flush=True)
 
-    # Save generated data as generic messages-format for training
-    generic_data_phi4 = to_generic(generated_data_phi4)
+    # Save generated data in messages format for training
+    messages_data_phi4 = to_messages(generated_data_phi4)
 
-    generic_path_phi4 = f"generic_data_{data_name}_{timestamp}_phi4.jsonl"
-    generic_data_phi4.to_json(generic_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Generic data saved to {generic_path_phi4}", flush=True)
+    messages_data_path_phi4 = f"messages_data_{data_name}_{timestamp}_phi4.jsonl"
+    messages_data_phi4.to_json(messages_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
 # %% [markdown]
 # ### Output Generated Data with Phi-4
@@ -405,12 +405,12 @@ if generate_data_with_llama3:
     generated_data_llama3.to_json(generated_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_llama3}", flush=True)
 
-    # Save generated data as generic messages-format for training
-    generic_data_llama3 = to_generic(generated_data_llama3)
+    # Save generated data in messages format for training
+    messages_data_llama3 = to_messages(generated_data_llama3)
 
-    generic_path_llama3 = f"generic_data_{data_name}_{timestamp}_llama3.jsonl"
-    generic_data_llama3.to_json(generic_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Generic data saved to {generic_path_llama3}", flush=True)
+    messages_data_path_llama3 = f"messages_data_{data_name}_{timestamp}_llama3.jsonl"
+    messages_data_llama3.to_json(messages_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
 # %% [markdown]
 # ### Output Generated Data with LLaMA 3.3
@@ -519,12 +519,12 @@ if generate_data_with_mixtral:
     generated_data_mixtral.to_json(generated_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_mixtral}", flush=True)
 
-    # Save generated data as generic messages-format for training
-    generic_data_mixtral = to_generic(generated_data_mixtral)
+    # Save generated data in messages format for training
+    messages_data_mixtral = to_messages(generated_data_mixtral)
 
-    generic_path_mixtral = f"generic_data_{data_name}_{timestamp}_mixtral.jsonl"
-    generic_data_mixtral.to_json(generic_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Generic data saved to {generic_path_mixtral}", flush=True)
+    messages_data_path_mixtral = f"messages_data_{data_name}_{timestamp}_mixtral.jsonl"
+    messages_data_mixtral.to_json(messages_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
 # %% [markdown]
 # ### Output Generated Data with Mixtral-8x7B
@@ -633,12 +633,12 @@ if generate_data_with_mixtral8x22b:
     generated_data_mixtral8x22b.to_json(generated_path_mixtral8x22b, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_mixtral8x22b}", flush=True)
 
-    # Save generated data as generic messages-format for training
-    generic_data_mixtral8x22b = to_generic(generated_data_mixtral8x22b)
+    # Save generated data in messages format for training
+    messages_data_mixtral8x22b = to_messages(generated_data_mixtral8x22b)
 
-    generic_path_mixtral8x22b = f"generic_data_{data_name}_{timestamp}_mixtral8x22b.jsonl"
-    generic_data_mixtral8x22b.to_json(generic_path_mixtral8x22b, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Generic data saved to {generic_path_mixtral8x22b}", flush=True)
+    messages_data_path_mixtral8x22b = f"messages_data_{data_name}_{timestamp}_mixtral8x22b.jsonl"
+    messages_data_mixtral8x22b.to_json(messages_data_path_mixtral8x22b, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_mixtral8x22b}", flush=True)
 
 # %% [markdown]
 # ### Output Generated Data with Mixtral-8x22B
