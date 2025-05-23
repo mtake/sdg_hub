@@ -20,7 +20,7 @@
 # Before running this notebook, you'll need to:
 # 
 # ```bash 
-# pip install sdg-hub==0.1.0a2
+# pip install sdg-hub==0.1.0a4
 # ```
 
 # %%
@@ -92,7 +92,7 @@ model_list: list[dict[str, str]] = res.json()
 model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
 
 def get_base_url(model_name: str)-> str:
-    endpoint = model_dict[model_name]
+    endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
     return f"{endpoint}/v1"
 
 # %% [markdown]
@@ -222,6 +222,7 @@ def write_input(f, generated_data_i) -> None:
 
 # %%
 generate_data_with_phi4 = True
+generate_data_with_phi4reasoningplus = False
 generate_data_with_llama3 = False
 generate_data_with_mixtral = False
 generate_data_with_mixtral8x22b = False
@@ -327,6 +328,118 @@ if generate_data_with_phi4:
                 f.write(generated_data_phi4[i]['question'] + "\n")
                 f.write("*******************************\n")
                 f.write(generated_data_phi4[i]['response'] + "\n")
+
+            f.write("\n")
+
+    print(f"Wrote {k} examples to {output_file}", flush=True)
+
+# %% [markdown]
+# ## (Optional) SDG with Phi-4-reasoning-plus Model
+
+# %% [markdown]
+# ### Setting up Phi-4-reasoning-plus Model
+
+# %%
+# Connect to Phi-4-reasoning-plus model running on vLLM
+phi4reasoningplus_teacher_model = "microsoft/Phi-4-reasoning-plus"
+phi4reasoningplus_endpoint = get_base_url(phi4reasoningplus_teacher_model)
+
+phi4reasoningplus_client = OpenAI(
+    api_key="EMPTY",
+    base_url=phi4reasoningplus_endpoint,
+    default_headers=default_headers,
+)
+
+# Verify connection to Phi-4-reasoning-plus model
+print(f"Connected to Phi-4-reasoning-plus model: {phi4reasoningplus_teacher_model}", flush=True)
+
+# %% [markdown]
+# ### Configure Phi-4-reasoning-plus Prompt Template
+
+# %%
+# Register the Phi-4-reasoning-plus chat template
+# This ensures proper formatting of prompts for the model
+
+phi4reasoningplus_teacher_model_hf = "microsoft/Phi-4-reasoning-plus"
+
+# Load the tokenizer to get the chat template
+phi4reasoningplus_tokenizer = AutoTokenizer.from_pretrained(phi4reasoningplus_teacher_model_hf)
+
+# Register the chat template in our prompt registry
+@PromptRegistry.register(phi4reasoningplus_teacher_model)
+def phi4reasoningplus_chat_template():
+    # @@@ahoaho XXX
+    # chat_template = phi4reasoningplus_tokenizer.chat_template
+    # chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>'}}{% generation %}{{message['content'] + '<|im_end|>'}}{% endgeneration %}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
+    # NOTE removed "generation" and "endgeneration" tags from the original template
+    chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>' + message['content'] + '<|im_end|>'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
+    return chat_template
+
+
+# %% [markdown]
+# ### Configure Phi-4-reasoning-plus Pipeline
+
+# %%
+# Create flow configuration for Phi-4-reasoning-plus
+flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file("synth_knowledge1.5_phi4reasoningplus.yaml")
+
+# Initialize SDG pipeline for Phi-4-reasoning-plus
+sdg_phi4reasoningplus = SDG(
+    [Pipeline(flow_cfg_phi4reasoningplus)],
+    num_workers=num_workers,
+    batch_size=batch_size,
+    save_freq=save_freq,
+)
+
+# %% [markdown]
+# ### Generate Data with Phi-4-reasoning-plus
+
+# %%
+if generate_data_with_phi4reasoningplus:
+    # Generate data using Phi-4-reasoning-plus model
+    generated_data_phi4reasoningplus = sdg_phi4reasoningplus.generate(ds, checkpoint_dir="Tmp-checkpoint")
+
+    generated_path_phi4reasoningplus = f"generated_data_{data_name}_{timestamp}_phi4reasoningplus.jsonl"
+    generated_data_phi4reasoningplus.to_json(generated_path_phi4reasoningplus, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Data saved to {generated_path_phi4reasoningplus}", flush=True)
+
+    # Save generated data in messages format for training
+    messages_data_phi4reasoningplus = to_messages(generated_data_phi4reasoningplus)
+
+    messages_data_path_phi4reasoningplus = f"messages_data_{data_name}_{timestamp}_phi4reasoningplus.jsonl"
+    messages_data_phi4reasoningplus.to_json(messages_data_path_phi4reasoningplus, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_phi4reasoningplus}", flush=True)
+
+# %% [markdown]
+# ### Output Generated Data with Phi-4-reasoning-plus
+
+# %%
+if generate_data_with_phi4reasoningplus:
+    # Save comparison results to markdown file
+    output_file = f"model_output_{data_name}_{timestamp}_phi4reasoningplus.md"
+
+    if 'generated_data_phi4reasoningplus' not in locals():
+        generated_data_phi4reasoningplus = []
+
+    with open(output_file, "w") as f:
+        num_generated_data_phi4reasoningplus = len(generated_data_phi4reasoningplus)
+
+        # Number of examples to compare
+        k = num_generated_data_phi4reasoningplus
+
+        # Compare generated Q&A pairs
+        for i in range(k):
+            f.write("# Example #{}\n\n".format(i+1))
+
+            if i < num_generated_data_phi4reasoningplus:
+                # Phi-4-reasoning-plus results
+                write_input(f, generated_data_phi4reasoningplus[i])
+                f.write(f"### Document{get_dataset_type(generated_data_phi4reasoningplus[i])} from Phi-4-reasoning-plus\n")
+                f.write(generated_data_phi4reasoningplus[i]['document'] + "\n\n")
+                f.write("### Result from Phi-4-reasoning-plus\n")
+                f.write(generated_data_phi4reasoningplus[i]['question'] + "\n")
+                f.write("*******************************\n")
+                f.write(generated_data_phi4reasoningplus[i]['response'] + "\n")
 
             f.write("\n")
 
@@ -687,6 +800,9 @@ output_file = f"model_comparison_{data_name}_{timestamp}.md"
 if 'generated_data_phi4' not in locals():
     generated_data_phi4 = []
 
+if 'generated_data_phi4reasoningplus' not in locals():
+    generated_data_phi4reasoningplus = []
+
 if 'generated_data_llama3' not in locals():
     generated_data_llama3 = []
 
@@ -698,12 +814,13 @@ if 'generated_data_mixtral8x22b' not in locals():
 
 with open(output_file, "w") as f:
     num_generated_data_phi4 = len(generated_data_phi4)
+    num_generated_data_phi4reasoningplus = len(generated_data_phi4reasoningplus)
     num_generated_data_llama3 = len(generated_data_llama3)
     num_generated_data_mixtral = len(generated_data_mixtral)
     num_generated_data_mixtral8x22b = len(generated_data_mixtral8x22b)
 
     # Number of examples to compare
-    k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_mixtral, num_generated_data_mixtral8x22b)
+    k = max(num_generated_data_phi4, num_generated_data_phi4reasoningplus, num_generated_data_llama3, num_generated_data_mixtral, num_generated_data_mixtral8x22b)
 
     # Compare generated Q&A pairs
     for i in range(k):
@@ -718,6 +835,16 @@ with open(output_file, "w") as f:
             f.write(generated_data_phi4[i]['question'] + "\n")
             f.write("*******************************\n")
             f.write(generated_data_phi4[i]['response'] + "\n")
+
+        if i < num_generated_data_phi4reasoningplus:
+            # Phi-4-reasoning-plus results
+            write_input(f, generated_data_phi4reasoningplus[i])
+            f.write(f"### Document{get_dataset_type(generated_data_phi4reasoningplus[i])} from Phi-4-reasoning-plus\n")
+            f.write(generated_data_phi4reasoningplus[i]['document'] + "\n\n")
+            f.write("### Result from Phi-4-reasoning-plus\n")
+            f.write(generated_data_phi4reasoningplus[i]['question'] + "\n")
+            f.write("*******************************\n")
+            f.write(generated_data_phi4reasoningplus[i]['response'] + "\n")
 
         if i < num_generated_data_llama3:
             # LLaMA 3.3 results
