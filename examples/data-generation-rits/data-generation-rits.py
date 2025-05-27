@@ -90,6 +90,11 @@ res = requests.get(url=url, headers=default_headers)
 assert res.status_code == 200
 model_list: list[dict[str, str]] = res.json()
 model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
+# NOTE avoid clashes in model_name
+model_dict["meta-llama/llama-3-3-70b-instruct"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+model_dict["microsoft/phi-4"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+model_dict["mistralai/mixtral-8x22B-instruct-v0.1"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x22b-instruct-v01"
+model_dict["mistralai/mixtral-8x7B-instruct-v0.1"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 
 def get_base_url(model_name: str)-> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
@@ -234,50 +239,53 @@ generate_data_with_mixtral8x22b = False
 # ### Setting up Phi-4 Model
 
 # %%
-# Connect to Phi-4 model running on RITS
-phi4_teacher_model = "microsoft/phi-4"
-phi4_endpoint = get_base_url(phi4_teacher_model)
+if generate_data_with_phi4:
+    # Connect to Phi-4 model running on RITS
+    phi4_teacher_model = "microsoft/phi-4"
+    phi4_endpoint = get_base_url(phi4_teacher_model)
 
-phi4_client = OpenAI(
-    api_key="EMPTY",
-    base_url=phi4_endpoint,
-    default_headers=default_headers,
-)
+    phi4_client = OpenAI(
+        api_key="EMPTY",
+        base_url=phi4_endpoint,
+        default_headers=default_headers,
+    )
 
-# Verify connection to Phi-4 model
-print(f"Connected to Phi-4 model: {phi4_teacher_model}", flush=True)
+    # Verify connection to Phi-4 model
+    print(f"Connected to Phi-4 model: {phi4_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure Phi-4 Prompt Template
 
 # %%
-# Register the Phi-4 chat template
-# This ensures proper formatting of prompts for the model
+if generate_data_with_phi4:
+    # Register the Phi-4 chat template
+    # This ensures proper formatting of prompts for the model
 
-phi4_teacher_model_hf = "microsoft/phi-4"
+    phi4_teacher_model_hf = "microsoft/phi-4"
 
-# Load the tokenizer to get the chat template
-phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
+    # Load the tokenizer to get the chat template
+    phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
 
-# Register the chat template in our prompt registry
-@PromptRegistry.register(phi4_teacher_model)
-def phi4_chat_template():
-    return phi4_tokenizer.chat_template
+    # Register the chat template in our prompt registry
+    @PromptRegistry.register(phi4_teacher_model)
+    def phi4_chat_template():
+        return phi4_tokenizer.chat_template
 
 # %% [markdown]
 # ### Configure Phi-4 Pipeline
 
 # %%
-# Create flow configuration for Phi-4
-flow_cfg_phi4 = Flow(phi4_client).get_flow_from_file("synth_knowledge1.5_phi4_rits.yaml")
+if generate_data_with_phi4:
+    # Create flow configuration for Phi-4
+    flow_cfg_phi4 = Flow(phi4_client).get_flow_from_file("synth_knowledge1.5_phi4_rits.yaml")
 
-# Initialize SDG pipeline for Phi-4
-sdg_phi4 = SDG(
-    [Pipeline(flow_cfg_phi4)],
-    num_workers=num_workers,
-    batch_size=batch_size,
-    save_freq=save_freq,
-)
+    # Initialize SDG pipeline for Phi-4
+    sdg_phi4 = SDG(
+        [Pipeline(flow_cfg_phi4)],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
 
 # %% [markdown]
 # ### Generate Data with Phi-4
@@ -285,7 +293,7 @@ sdg_phi4 = SDG(
 # %%
 if generate_data_with_phi4:
     # Generate data using Phi-4 model
-    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir="Tmp-checkpoint")
+    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir="Tmp-checkpoint_phi4")
 
     generated_path_phi4 = f"generated_data_{data_name}_{timestamp}_phi4.jsonl"
     generated_data_phi4.to_json(generated_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
@@ -340,56 +348,59 @@ if generate_data_with_phi4:
 # ### Setting up Phi-4-reasoning-plus Model
 
 # %%
-# Connect to Phi-4-reasoning-plus model running on vLLM
-phi4reasoningplus_teacher_model = "microsoft/Phi-4-reasoning-plus"
-phi4reasoningplus_endpoint = get_base_url(phi4reasoningplus_teacher_model)
+if generate_data_with_phi4reasoningplus:
+    # Connect to Phi-4-reasoning-plus model running on vLLM
+    phi4reasoningplus_teacher_model = "microsoft/Phi-4-reasoning-plus"
+    phi4reasoningplus_endpoint = get_base_url(phi4reasoningplus_teacher_model)
 
-phi4reasoningplus_client = OpenAI(
-    api_key="EMPTY",
-    base_url=phi4reasoningplus_endpoint,
-    default_headers=default_headers,
-)
+    phi4reasoningplus_client = OpenAI(
+        api_key="EMPTY",
+        base_url=phi4reasoningplus_endpoint,
+        default_headers=default_headers,
+    )
 
-# Verify connection to Phi-4-reasoning-plus model
-print(f"Connected to Phi-4-reasoning-plus model: {phi4reasoningplus_teacher_model}", flush=True)
+    # Verify connection to Phi-4-reasoning-plus model
+    print(f"Connected to Phi-4-reasoning-plus model: {phi4reasoningplus_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure Phi-4-reasoning-plus Prompt Template
 
 # %%
-# Register the Phi-4-reasoning-plus chat template
-# This ensures proper formatting of prompts for the model
+if generate_data_with_phi4reasoningplus:
+    # Register the Phi-4-reasoning-plus chat template
+    # This ensures proper formatting of prompts for the model
 
-phi4reasoningplus_teacher_model_hf = "microsoft/Phi-4-reasoning-plus"
+    phi4reasoningplus_teacher_model_hf = "microsoft/Phi-4-reasoning-plus"
 
-# Load the tokenizer to get the chat template
-phi4reasoningplus_tokenizer = AutoTokenizer.from_pretrained(phi4reasoningplus_teacher_model_hf)
+    # Load the tokenizer to get the chat template
+    phi4reasoningplus_tokenizer = AutoTokenizer.from_pretrained(phi4reasoningplus_teacher_model_hf)
 
-# Register the chat template in our prompt registry
-@PromptRegistry.register(phi4reasoningplus_teacher_model)
-def phi4reasoningplus_chat_template():
-    # @@@ahoaho XXX
-    # chat_template = phi4reasoningplus_tokenizer.chat_template
-    # chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>'}}{% generation %}{{message['content'] + '<|im_end|>'}}{% endgeneration %}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
-    # NOTE removed "generation" and "endgeneration" tags from the original template
-    chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>' + message['content'] + '<|im_end|>'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
-    return chat_template
+    # Register the chat template in our prompt registry
+    @PromptRegistry.register(phi4reasoningplus_teacher_model)
+    def phi4reasoningplus_chat_template():
+        # @@@ahoaho XXX
+        # chat_template = phi4reasoningplus_tokenizer.chat_template
+        # chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>'}}{% generation %}{{message['content'] + '<|im_end|>'}}{% endgeneration %}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
+        # NOTE removed "generation" and "endgeneration" tags from the original template
+        chat_template = "<|im_start|>system<|im_sep|>You are Phi, a language model trained by Microsoft to help users. Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <think> {Thought section} </think> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:<|im_end|>{% for message in messages %}{% if (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>' + message['content'] + '<|im_end|>'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}"
+        return chat_template
 
 
 # %% [markdown]
 # ### Configure Phi-4-reasoning-plus Pipeline
 
 # %%
-# Create flow configuration for Phi-4-reasoning-plus
-flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file("synth_knowledge1.5_phi4reasoningplus.yaml")
+if generate_data_with_phi4reasoningplus:
+    # Create flow configuration for Phi-4-reasoning-plus
+    flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file("synth_knowledge1.5_phi4reasoningplus.yaml")
 
-# Initialize SDG pipeline for Phi-4-reasoning-plus
-sdg_phi4reasoningplus = SDG(
-    [Pipeline(flow_cfg_phi4reasoningplus)],
-    num_workers=num_workers,
-    batch_size=batch_size,
-    save_freq=save_freq,
-)
+    # Initialize SDG pipeline for Phi-4-reasoning-plus
+    sdg_phi4reasoningplus = SDG(
+        [Pipeline(flow_cfg_phi4reasoningplus)],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
 
 # %% [markdown]
 # ### Generate Data with Phi-4-reasoning-plus
@@ -397,7 +408,7 @@ sdg_phi4reasoningplus = SDG(
 # %%
 if generate_data_with_phi4reasoningplus:
     # Generate data using Phi-4-reasoning-plus model
-    generated_data_phi4reasoningplus = sdg_phi4reasoningplus.generate(ds, checkpoint_dir="Tmp-checkpoint")
+    generated_data_phi4reasoningplus = sdg_phi4reasoningplus.generate(ds, checkpoint_dir="Tmp-checkpoint_phi4reasoningplus")
 
     generated_path_phi4reasoningplus = f"generated_data_{data_name}_{timestamp}_phi4reasoningplus.jsonl"
     generated_data_phi4reasoningplus.to_json(generated_path_phi4reasoningplus, orient="records", lines=True, force_ascii=force_ascii)
@@ -452,17 +463,18 @@ if generate_data_with_phi4reasoningplus:
 # ### Setting up LLaMA 3.3 70B Model
 
 # %%
-# Configure OpenAI client to connect to RITS server
-llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
-llama3_endpoint = get_base_url(llama3_teacher_model)
+if generate_data_with_llama3:
+    # Configure OpenAI client to connect to RITS server
+    llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
+    llama3_endpoint = get_base_url(llama3_teacher_model)
 
-llama3_client = OpenAI(
-    api_key="EMPTY",
-    base_url=llama3_endpoint,
-    default_headers=default_headers,
-)
+    llama3_client = OpenAI(
+        api_key="EMPTY",
+        base_url=llama3_endpoint,
+        default_headers=default_headers,
+    )
 
-print(f"Connected to Llama-3.3 model: {llama3_teacher_model}", flush=True)
+    print(f"Connected to Llama-3.3 model: {llama3_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure LLaMA 3.3 Prompt Template
@@ -470,19 +482,20 @@ print(f"Connected to Llama-3.3 model: {llama3_teacher_model}", flush=True)
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-# Register the LLaMA 3.3 chat template
-# This ensures proper formatting of prompts for the model
+if generate_data_with_llama3:
+    # Register the LLaMA 3.3 chat template
+    # This ensures proper formatting of prompts for the model
 
-# llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
-llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
+    # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
+    llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
 
-# Load the tokenizer to get the chat template
-llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
+    # Load the tokenizer to get the chat template
+    llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
 
-# Register the chat template in our prompt registry
-@PromptRegistry.register(llama3_teacher_model)
-def llama3_chat_template():
-    return llama3_tokenizer.chat_template
+    # Register the chat template in our prompt registry
+    @PromptRegistry.register(llama3_teacher_model)
+    def llama3_chat_template():
+        return llama3_tokenizer.chat_template
 
 # %% [markdown]
 # ### Configure the Data Generation Pipeline
@@ -493,16 +506,17 @@ def llama3_chat_template():
 # 3. SDG configuration with batch processing, number of workers, and save frequency parameters
 
 # %%
-# Load the flow configuration from YAML file
-flow_cfg_llama3 = Flow(llama3_client).get_flow_from_file("synth_knowledge1.5_llama3.3_rits.yaml")
+if generate_data_with_llama3:
+    # Load the flow configuration from YAML file
+    flow_cfg_llama3 = Flow(llama3_client).get_flow_from_file("synth_knowledge1.5_llama3.3_rits.yaml")
 
-# Initialize the SDG pipeline with processing parameters
-sdg_llama3 = SDG(
-    [Pipeline(flow_cfg_llama3)],
-    num_workers=num_workers,
-    batch_size=batch_size,
-    save_freq=save_freq,
-)
+    # Initialize the SDG pipeline with processing parameters
+    sdg_llama3 = SDG(
+        [Pipeline(flow_cfg_llama3)],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
 
 # %% [markdown]
 # ### Generate Data with LLaMA 3.3
@@ -512,7 +526,7 @@ sdg_llama3 = SDG(
 # %%
 if generate_data_with_llama3:
     # Generate synthetic data and save checkpoints
-    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir="Tmp-checkpoint")
+    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir="Tmp-checkpoint_llama3")
 
     generated_path_llama3 = f"generated_data_{data_name}_{timestamp}_llama3.jsonl"
     generated_data_llama3.to_json(generated_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
@@ -569,18 +583,19 @@ if generate_data_with_llama3:
 # For comparison, we'll also generate data using the Mixtral model.
 
 # %%
-# Connect to Mixtral model running on RITS
-mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
-mixtral_endpoint = get_base_url(mixtral_teacher_model)
+if generate_data_with_mixtral:
+    # Connect to Mixtral model running on RITS
+    mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
+    mixtral_endpoint = get_base_url(mixtral_teacher_model)
 
-mixtral_client = OpenAI(
-    api_key="EMPTY",
-    base_url=mixtral_endpoint,
-    default_headers=default_headers,
-)
+    mixtral_client = OpenAI(
+        api_key="EMPTY",
+        base_url=mixtral_endpoint,
+        default_headers=default_headers,
+    )
 
-# Verify connection to Mixtral model
-print(f"Connected to Mixtral model: {mixtral_teacher_model}", flush=True)
+    # Verify connection to Mixtral model
+    print(f"Connected to Mixtral model: {mixtral_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure Mixtral-8x7B Prompt Template
@@ -588,18 +603,19 @@ print(f"Connected to Mixtral model: {mixtral_teacher_model}", flush=True)
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-# Register the Mixtral chat template
-# This ensures proper formatting of prompts for the model
+if generate_data_with_mixtral:
+    # Register the Mixtral chat template
+    # This ensures proper formatting of prompts for the model
 
-mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
-# Load the tokenizer to get the chat template
-mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
+    # Load the tokenizer to get the chat template
+    mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
 
-# Register the chat template in our prompt registry
-@PromptRegistry.register(mixtral_teacher_model)
-def mixtral_chat_template():
-    return mixtral_tokenizer.chat_template
+    # Register the chat template in our prompt registry
+    @PromptRegistry.register(mixtral_teacher_model)
+    def mixtral_chat_template():
+        return mixtral_tokenizer.chat_template
 
 # %% [markdown]
 # ### Configure Mixtral-8x7B Pipeline
@@ -607,16 +623,17 @@ def mixtral_chat_template():
 # Set up a similar pipeline for Mixtral model generation.
 
 # %%
-# Create flow configuration for Mixtral
-flow_cfg_mixtral = Flow(mixtral_client).get_flow_from_file("synth_knowledge1.5_mixtral_rits.yaml")
+if generate_data_with_mixtral:
+    # Create flow configuration for Mixtral
+    flow_cfg_mixtral = Flow(mixtral_client).get_flow_from_file("synth_knowledge1.5_mixtral_rits.yaml")
 
-# Initialize SDG pipeline for Mixtral
-sdg_mixtral = SDG(
-    [Pipeline(flow_cfg_mixtral)],
-    num_workers=num_workers,
-    batch_size=batch_size,
-    save_freq=save_freq,
-)
+    # Initialize SDG pipeline for Mixtral
+    sdg_mixtral = SDG(
+        [Pipeline(flow_cfg_mixtral)],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
 
 # %% [markdown]
 # ### Generate Data with Mixtral-8x7B
@@ -626,7 +643,7 @@ sdg_mixtral = SDG(
 # %%
 if generate_data_with_mixtral:
     # Generate data using Mixtral model
-    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir="Tmp-checkpoint")
+    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir="Tmp-checkpoint_mixtral")
 
     generated_path_mixtral = f"generated_data_{data_name}_{timestamp}_mixtral.jsonl"
     generated_data_mixtral.to_json(generated_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
@@ -683,18 +700,19 @@ if generate_data_with_mixtral:
 # For comparison, we'll also generate data using the Mixtral model.
 
 # %%
-# Connect to Mixtral model running on RITS
-mixtral8x22b_teacher_model = "mistralai/mixtral-8x22B-instruct-v0.1"
-mixtral8x22b_endpoint = get_base_url(mixtral8x22b_teacher_model)
+if generate_data_with_mixtral8x22b:
+    # Connect to Mixtral model running on RITS
+    mixtral8x22b_teacher_model = "mistralai/mixtral-8x22B-instruct-v0.1"
+    mixtral8x22b_endpoint = get_base_url(mixtral8x22b_teacher_model)
 
-mixtral8x22b_client = OpenAI(
-    api_key="EMPTY",
-    base_url=mixtral8x22b_endpoint,
-    default_headers=default_headers,
-)
+    mixtral8x22b_client = OpenAI(
+        api_key="EMPTY",
+        base_url=mixtral8x22b_endpoint,
+        default_headers=default_headers,
+    )
 
-# Verify connection to Mixtral model
-print(f"Connected to Mixtral model: {mixtral8x22b_teacher_model}", flush=True)
+    # Verify connection to Mixtral model
+    print(f"Connected to Mixtral model: {mixtral8x22b_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure Mixtral-8x22B Prompt Template
@@ -702,18 +720,19 @@ print(f"Connected to Mixtral model: {mixtral8x22b_teacher_model}", flush=True)
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-# Register the Mixtral chat template
-# This ensures proper formatting of prompts for the model
+if generate_data_with_mixtral8x22b:
+    # Register the Mixtral chat template
+    # This ensures proper formatting of prompts for the model
 
-mixtral8x22b_teacher_model_hf = "mistralai/Mixtral-8x22B-Instruct-v0.1"
+    mixtral8x22b_teacher_model_hf = "mistralai/Mixtral-8x22B-Instruct-v0.1"
 
-# Load the tokenizer to get the chat template
-mixtral8x22b_tokenizer = AutoTokenizer.from_pretrained(mixtral8x22b_teacher_model_hf)
+    # Load the tokenizer to get the chat template
+    mixtral8x22b_tokenizer = AutoTokenizer.from_pretrained(mixtral8x22b_teacher_model_hf)
 
-# Register the chat template in our prompt registry
-@PromptRegistry.register(mixtral8x22b_teacher_model)
-def mixtral8x22b_chat_template():
-    return mixtral8x22b_tokenizer.chat_template
+    # Register the chat template in our prompt registry
+    @PromptRegistry.register(mixtral8x22b_teacher_model)
+    def mixtral8x22b_chat_template():
+        return mixtral8x22b_tokenizer.chat_template
 
 # %% [markdown]
 # ### Configure Mixtral-8x22B Pipeline
@@ -721,16 +740,17 @@ def mixtral8x22b_chat_template():
 # Set up a similar pipeline for Mixtral model generation.
 
 # %%
-# Create flow configuration for Mixtral
-flow_cfg_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file("synth_knowledge1.5_mixtral8x22b_rits.yaml")
+if generate_data_with_mixtral8x22b:
+    # Create flow configuration for Mixtral
+    flow_cfg_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file("synth_knowledge1.5_mixtral8x22b_rits.yaml")
 
-# Initialize SDG pipeline for Mixtral
-sdg_mixtral8x22b = SDG(
-    [Pipeline(flow_cfg_mixtral8x22b)],
-    num_workers=num_workers,
-    batch_size=batch_size,
-    save_freq=save_freq,
-)
+    # Initialize SDG pipeline for Mixtral
+    sdg_mixtral8x22b = SDG(
+        [Pipeline(flow_cfg_mixtral8x22b)],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
 
 # %% [markdown]
 # ### Generate Data with Mixtral-8x22B
@@ -740,7 +760,7 @@ sdg_mixtral8x22b = SDG(
 # %%
 if generate_data_with_mixtral8x22b:
     # Generate data using Mixtral model
-    generated_data_mixtral8x22b = sdg_mixtral8x22b.generate(ds, checkpoint_dir="Tmp-checkpoint")
+    generated_data_mixtral8x22b = sdg_mixtral8x22b.generate(ds, checkpoint_dir="Tmp-checkpoint_mixtral8x22b")
 
     generated_path_mixtral8x22b = f"generated_data_{data_name}_{timestamp}_mixtral8x22b.jsonl"
     generated_data_mixtral8x22b.to_json(generated_path_mixtral8x22b, orient="records", lines=True, force_ascii=force_ascii)
