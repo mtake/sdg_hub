@@ -108,7 +108,13 @@ def get_base_url(model_name: str)-> str:
 # data_name = "20250411_en_2"
 # data_name = "20250411_ja"
 # data_name = "20250411_ja_non_ascii"
-data_name = "teigaku-genzei"
+# data_name = "teigaku-genzei"
+data_name = "teigaku-genzei-ibm"
+
+if "20250411_ja" in data_name or data_name == "teigaku-genzei" or data_name == "teigaku-genzei-ibm":
+    data_lang = "_ja"
+else:
+    data_lang = ""
 
 seed_data_name = f"seed_data_{data_name}"
 seed_data_path = f"{seed_data_name}.jsonl"
@@ -277,7 +283,7 @@ if generate_data_with_phi4:
 # %%
 if generate_data_with_phi4:
     # Create flow configuration for Phi-4
-    flow_cfg_phi4 = Flow(phi4_client).get_flow_from_file("synth_knowledge1.5_phi4_rits.yaml")
+    flow_cfg_phi4 = Flow(phi4_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4_rits.yaml")
 
     # Initialize SDG pipeline for Phi-4
     sdg_phi4 = SDG(
@@ -392,7 +398,7 @@ if generate_data_with_phi4reasoningplus:
 # %%
 if generate_data_with_phi4reasoningplus:
     # Create flow configuration for Phi-4-reasoning-plus
-    flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file("synth_knowledge1.5_phi4reasoningplus.yaml")
+    flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4reasoningplus.yaml")
 
     # Initialize SDG pipeline for Phi-4-reasoning-plus
     sdg_phi4reasoningplus = SDG(
@@ -508,7 +514,7 @@ if generate_data_with_llama3:
 # %%
 if generate_data_with_llama3:
     # Load the flow configuration from YAML file
-    flow_cfg_llama3 = Flow(llama3_client).get_flow_from_file("synth_knowledge1.5_llama3.3_rits.yaml")
+    flow_cfg_llama3 = Flow(llama3_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_llama3.3_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
@@ -625,7 +631,7 @@ if generate_data_with_mixtral:
 # %%
 if generate_data_with_mixtral:
     # Create flow configuration for Mixtral
-    flow_cfg_mixtral = Flow(mixtral_client).get_flow_from_file("synth_knowledge1.5_mixtral_rits.yaml")
+    flow_cfg_mixtral = Flow(mixtral_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral_rits.yaml")
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral = SDG(
@@ -742,7 +748,7 @@ if generate_data_with_mixtral8x22b:
 # %%
 if generate_data_with_mixtral8x22b:
     # Create flow configuration for Mixtral
-    flow_cfg_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file("synth_knowledge1.5_mixtral8x22b_rits.yaml")
+    flow_cfg_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral8x22b_rits.yaml")
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral8x22b = SDG(
