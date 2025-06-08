@@ -109,9 +109,10 @@ def get_base_url(model_name: str)-> str:
 # data_name = "20250411_ja"
 # data_name = "20250411_ja_non_ascii"
 # data_name = "teigaku-genzei"
-data_name = "teigaku-genzei-ibm"
+# data_name = "teigaku-genzei-ibm"
+data_name = "teigaku-genzei-ibm-35x"
 
-if "20250411_ja" in data_name or data_name == "teigaku-genzei" or data_name == "teigaku-genzei-ibm":
+if "20250411_ja" in data_name or "teigaku-genzei" in data_name:
     data_lang = "_ja"
 else:
     data_lang = ""
