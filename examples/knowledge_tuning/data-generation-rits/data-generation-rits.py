@@ -38,7 +38,6 @@ from openai import OpenAI
 from transformers import AutoTokenizer
 
 from sdg_hub.flow import Flow
-from sdg_hub.pipeline import Pipeline
 from sdg_hub.sdg import SDG
 from sdg_hub.registry import PromptRegistry
 
@@ -110,7 +109,8 @@ def get_base_url(model_name: str)-> str:
 # data_name = "20250411_ja_non_ascii"
 # data_name = "teigaku-genzei"
 # data_name = "teigaku-genzei-ibm-v0"
-data_name = "teigaku-genzei-ibm-v2"
+# data_name = "teigaku-genzei-ibm-v2"
+data_name = "teigaku-genzei-ibm-v3"
 
 if "20250411_ja" in data_name or "teigaku-genzei" in data_name:
     data_lang = "_ja"
@@ -288,7 +288,7 @@ if generate_data_with_phi4:
 
     # Initialize SDG pipeline for Phi-4
     sdg_phi4 = SDG(
-        [Pipeline(flow_cfg_phi4)],
+        [flow_cfg_phi4],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -403,7 +403,7 @@ if generate_data_with_phi4reasoningplus:
 
     # Initialize SDG pipeline for Phi-4-reasoning-plus
     sdg_phi4reasoningplus = SDG(
-        [Pipeline(flow_cfg_phi4reasoningplus)],
+        [flow_cfg_phi4reasoningplus],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -519,7 +519,7 @@ if generate_data_with_llama3:
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
-        [Pipeline(flow_cfg_llama3)],
+        [flow_cfg_llama3],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -636,7 +636,7 @@ if generate_data_with_mixtral:
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral = SDG(
-        [Pipeline(flow_cfg_mixtral)],
+        [flow_cfg_mixtral],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -753,7 +753,7 @@ if generate_data_with_mixtral8x22b:
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral8x22b = SDG(
-        [Pipeline(flow_cfg_mixtral8x22b)],
+        [flow_cfg_mixtral8x22b],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
