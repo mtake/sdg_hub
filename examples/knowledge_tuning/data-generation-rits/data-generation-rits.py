@@ -284,11 +284,11 @@ if generate_data_with_phi4:
 # %%
 if generate_data_with_phi4:
     # Create flow configuration for Phi-4
-    flow_cfg_phi4 = Flow(phi4_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4_rits.yaml")
+    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4_rits.yaml")
 
     # Initialize SDG pipeline for Phi-4
     sdg_phi4 = SDG(
-        [flow_cfg_phi4],
+        [flow_phi4],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -399,11 +399,11 @@ if generate_data_with_phi4reasoningplus:
 # %%
 if generate_data_with_phi4reasoningplus:
     # Create flow configuration for Phi-4-reasoning-plus
-    flow_cfg_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4reasoningplus.yaml")
+    flow_phi4reasoningplus = Flow(phi4reasoningplus_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4reasoningplus.yaml")
 
     # Initialize SDG pipeline for Phi-4-reasoning-plus
     sdg_phi4reasoningplus = SDG(
-        [flow_cfg_phi4reasoningplus],
+        [flow_phi4reasoningplus],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -515,11 +515,11 @@ if generate_data_with_llama3:
 # %%
 if generate_data_with_llama3:
     # Load the flow configuration from YAML file
-    flow_cfg_llama3 = Flow(llama3_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_llama3.3_rits.yaml")
+    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_llama3.3_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
-        [flow_cfg_llama3],
+        [flow_llama3],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -632,11 +632,11 @@ if generate_data_with_mixtral:
 # %%
 if generate_data_with_mixtral:
     # Create flow configuration for Mixtral
-    flow_cfg_mixtral = Flow(mixtral_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral_rits.yaml")
+    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral_rits.yaml")
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral = SDG(
-        [flow_cfg_mixtral],
+        [flow_mixtral],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
@@ -749,11 +749,11 @@ if generate_data_with_mixtral8x22b:
 # %%
 if generate_data_with_mixtral8x22b:
     # Create flow configuration for Mixtral
-    flow_cfg_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral8x22b_rits.yaml")
+    flow_mixtral8x22b = Flow(mixtral8x22b_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral8x22b_rits.yaml")
 
     # Initialize SDG pipeline for Mixtral
     sdg_mixtral8x22b = SDG(
-        [flow_cfg_mixtral8x22b],
+        [flow_mixtral8x22b],
         num_workers=num_workers,
         batch_size=batch_size,
         save_freq=save_freq,
