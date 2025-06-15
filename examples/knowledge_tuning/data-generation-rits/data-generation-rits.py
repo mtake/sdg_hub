@@ -131,6 +131,9 @@ ds = load_dataset('json', data_files=seed_data_path, split='train')
 if repeat_times > 1:
     ds = ds.repeat(repeat_times)
 
+# %%
+print(f"Loaded {len(ds)} seed data", flush=True)
+
 # %% [markdown]
 # ### Utilities for Generated Data
 
