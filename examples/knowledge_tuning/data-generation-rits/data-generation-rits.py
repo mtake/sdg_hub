@@ -50,13 +50,6 @@ timestamp = now.strftime('%Y%m%d-%H%M%S')
 force_ascii = True  # NOTE this is default
 # force_ascii = False
 
-# %%
-sample_seed_data = False  # For production
-# sample_seed_data = True  # For test
-
-MAX_SEED_DATA = 1
-# MAX_SEED_DATA = 3
-
 # %% [markdown]
 # ### Configure Parallelism
 
@@ -116,6 +109,12 @@ else:
 seed_data_name = f"seed_data_{data_name}"
 seed_data_path = f"{seed_data_name}.jsonl"
 
+# %%
+repeat_times = 1
+# repeat_times = 10
+
+data_name_repeat = f"{data_name}-r{repeat_times}" if repeat_times > 1 else data_name
+
 # %% [markdown]
 # ### Load and Prepare Seed Data
 # 
@@ -126,14 +125,11 @@ seed_data_path = f"{seed_data_name}.jsonl"
 ds = load_dataset('json', data_files=seed_data_path, split='train')
 
 # %% [markdown]
-# ### (Optional) Reduce Seed Data for Testing
+# ### (Optional) Repeat Seed Data
 
 # %%
-if sample_seed_data:
-    num_seed_data = len(ds)
-    num_seed_data = min(num_seed_data, MAX_SEED_DATA)
-
-    ds = ds.select(range(num_seed_data))
+if repeat_times > 1:
+    ds = ds.repeat(repeat_times)
 
 # %% [markdown]
 # ### Utilities for Generated Data
@@ -270,14 +266,14 @@ if generate_data_with_phi4:
     # Generate data using phi4 model
     generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir="Tmp_phi4")
 
-    generated_path_phi4 = f"generated_data_{data_name}_{timestamp}_phi4.jsonl"
+    generated_path_phi4 = f"generated_data_{data_name_repeat}_{timestamp}_phi4.jsonl"
     generated_data_phi4.to_json(generated_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_phi4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_phi4 = to_messages(generated_data_phi4)
 
-    messages_data_path_phi4 = f"messages_data_{data_name}_{timestamp}_phi4.jsonl"
+    messages_data_path_phi4 = f"messages_data_{data_name_repeat}_{timestamp}_phi4.jsonl"
     messages_data_phi4.to_json(messages_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
@@ -287,7 +283,7 @@ if generate_data_with_phi4:
 # %%
 if generate_data_with_phi4:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name}_{timestamp}_phi4.md"
+    output_file = f"model_output_{data_name_repeat}_{timestamp}_phi4.md"
 
     if 'generated_data_phi4' not in locals():
         generated_data_phi4 = []
@@ -334,7 +330,7 @@ if generate_data_with_llama3:
         default_headers=default_headers,
     )
 
-    print(f"Connected to Llama-3.3 model: {llama3_teacher_model}", flush=True)
+    print(f"Connected to llama3 model: {llama3_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure llama3 Prompt Template
@@ -388,14 +384,14 @@ if generate_data_with_llama3:
     # Generate synthetic data and save checkpoints
     generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir="Tmp_llama3")
 
-    generated_path_llama3 = f"generated_data_{data_name}_{timestamp}_llama3.jsonl"
+    generated_path_llama3 = f"generated_data_{data_name_repeat}_{timestamp}_llama3.jsonl"
     generated_data_llama3.to_json(generated_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_llama3}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama3 = to_messages(generated_data_llama3)
 
-    messages_data_path_llama3 = f"messages_data_{data_name}_{timestamp}_llama3.jsonl"
+    messages_data_path_llama3 = f"messages_data_{data_name_repeat}_{timestamp}_llama3.jsonl"
     messages_data_llama3.to_json(messages_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
@@ -405,7 +401,7 @@ if generate_data_with_llama3:
 # %%
 if generate_data_with_llama3:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name}_{timestamp}_llama3.md"
+    output_file = f"model_output_{data_name_repeat}_{timestamp}_llama3.md"
 
     if 'generated_data_llama3' not in locals():
         generated_data_llama3 = []
@@ -505,14 +501,14 @@ if generate_data_with_mixtral:
     # Generate data using mixtral model
     generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir="Tmp_mixtral")
 
-    generated_path_mixtral = f"generated_data_{data_name}_{timestamp}_mixtral.jsonl"
+    generated_path_mixtral = f"generated_data_{data_name_repeat}_{timestamp}_mixtral.jsonl"
     generated_data_mixtral.to_json(generated_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_path_mixtral}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_mixtral = to_messages(generated_data_mixtral)
 
-    messages_data_path_mixtral = f"messages_data_{data_name}_{timestamp}_mixtral.jsonl"
+    messages_data_path_mixtral = f"messages_data_{data_name_repeat}_{timestamp}_mixtral.jsonl"
     messages_data_mixtral.to_json(messages_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
@@ -522,7 +518,7 @@ if generate_data_with_mixtral:
 # %%
 if generate_data_with_mixtral:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name}_{timestamp}_mixtral.md"
+    output_file = f"model_output_{data_name_repeat}_{timestamp}_mixtral.md"
 
     if 'generated_data_mixtral' not in locals():
         generated_data_mixtral = []
@@ -558,7 +554,7 @@ if generate_data_with_mixtral:
 
 # %%
 # Save comparison results to markdown file
-output_file = f"model_comparison_{data_name}_{timestamp}.md"
+output_file = f"model_comparison_{data_name_repeat}_{timestamp}.md"
 
 if 'generated_data_phi4' not in locals():
     generated_data_phi4 = []
