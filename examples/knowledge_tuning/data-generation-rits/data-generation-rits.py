@@ -267,7 +267,7 @@ if generate_data_with_phi4:
 # %%
 if generate_data_with_phi4:
     # Generate data using phi4 model
-    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir="Tmp_phi4")
+    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_repeat}_phi4")
 
     generated_path_phi4 = f"generated_data_{data_name_repeat}_{timestamp}_phi4.jsonl"
     generated_data_phi4.to_json(generated_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
@@ -385,7 +385,7 @@ if generate_data_with_llama3:
 # %%
 if generate_data_with_llama3:
     # Generate synthetic data and save checkpoints
-    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir="Tmp_llama3")
+    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_repeat}_llama3")
 
     generated_path_llama3 = f"generated_data_{data_name_repeat}_{timestamp}_llama3.jsonl"
     generated_data_llama3.to_json(generated_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
@@ -502,7 +502,7 @@ if generate_data_with_mixtral:
 # %%
 if generate_data_with_mixtral:
     # Generate data using mixtral model
-    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir="Tmp_mixtral")
+    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_repeat}_mixtral")
 
     generated_path_mixtral = f"generated_data_{data_name_repeat}_{timestamp}_mixtral.jsonl"
     generated_data_mixtral.to_json(generated_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
