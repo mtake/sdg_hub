@@ -54,15 +54,15 @@ force_ascii = True  # NOTE this is default
 # ### Configure Parallelism
 
 # %%
-# For production
-num_workers = 8   # Number of parallel workers
-batch_size = 8    # Batch size for processing
-save_freq = 1000  # How often to save checkpoints
+# src/sdg_hub/flow_runner.py
+num_workers = 32   # Number of worker processes to use, by default 32.
+batch_size = 8     # Batch size for processing, by default 8.
+save_freq = 2      # Frequency (in batches) at which to save checkpoints, by default 2.
 
 # For test
-# num_workers = 1   # Number of parallel workers
-# batch_size = 1    # Batch size for processing
-# save_freq = 1000  # How often to save checkpoints
+# num_workers = 1    # Number of worker processes to use, by default 32.
+# batch_size = 1     # Batch size for processing, by default 8.
+# save_freq = 1000   # Frequency (in batches) at which to save checkpoints, by default 2.
 
 # %% [markdown]
 # ### Setup environments for [RITS](https://rits.fmaas.res.ibm.com/)
@@ -124,12 +124,23 @@ data_name_repeat = f"{data_name}-r{repeat_times}" if repeat_times > 1 else data_
 # Load the seed data from JSON file
 ds = load_dataset('json', data_files=seed_data_path, split='train')
 
+# For testing, we'll use just one example
+# ds = ds.select(range(1))
+
 # %% [markdown]
 # ### (Optional) Repeat Seed Data
 
 # %%
 if repeat_times > 1:
     ds = ds.repeat(repeat_times)
+
+# %% [markdown]
+# ### Assign Seed ID
+
+# %%
+# Add seed_id column to preserve repetition in seed data
+# See https://github.com/Red-Hat-AI-Innovation-Team/sdg_hub/blob/42650f1340a2d3576818d68e05508dfe2a8d04bd/src/sdg_hub/checkpointer.py#L103
+ds = ds.add_column("seed_id", list(range(len(ds))))
 
 # %%
 print(f"Loaded {len(ds)} seed data", flush=True)
