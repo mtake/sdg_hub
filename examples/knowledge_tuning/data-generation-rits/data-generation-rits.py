@@ -324,7 +324,7 @@ if generate_data_with_phi4:
 
         # Compare generated Q&A pairs
         for i in range(k):
-            f.write("# Example #{}\n\n".format(i+1))
+            f.write(f"# Example #{i+1}\n\n")
 
             if i < num_generated_data_phi4:
                 # phi4 results
@@ -442,7 +442,7 @@ if generate_data_with_llama3:
 
         # Compare generated Q&A pairs
         for i in range(k):
-            f.write("# Example #{}\n\n".format(i+1))
+            f.write(f"# Example #{i+1}\n\n")
 
             if i < num_generated_data_llama3:
                 # LLaMA 3.3 results
@@ -559,7 +559,7 @@ if generate_data_with_mixtral:
 
         # Compare generated Q&A pairs
         for i in range(k):
-            f.write("# Example #{}\n\n".format(i+1))
+            f.write(f"# Example #{i+1}\n\n")
 
             if i < num_generated_data_mixtral:
                 # mixtral results
@@ -603,7 +603,7 @@ with open(output_file, "w") as f:
 
     # Compare generated Q&A pairs
     for i in range(k):
-        f.write("# Example #{}\n\n".format(i+1))
+        f.write(f"# Example #{i+1}\n\n")
 
         if i < num_generated_data_phi4:
             # phi4 results
