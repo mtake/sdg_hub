@@ -106,7 +106,8 @@ def get_base_url(model_name: str)-> str:
 # data_name = "teigaku-genzei"
 # data_name = "teigaku-genzei-ibm-v0"
 # data_name = "teigaku-genzei-ibm-v2"
-data_name = "teigaku-genzei-ibm-v3"
+# data_name = "teigaku-genzei-ibm-v3"
+data_name = "teigaku-genzei-ibm-v4"
 
 if "20250411_ja" in data_name or "teigaku-genzei" in data_name:
     data_lang = "_ja"
