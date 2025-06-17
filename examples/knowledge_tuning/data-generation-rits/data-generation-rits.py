@@ -157,6 +157,7 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 
 # %%
 def to_messages(generated_data: Dataset) -> Dataset:
+    seen = set()
     messages_list: list[dict[str, any]] = []
     for generated_datum in generated_data:
         user = generated_datum['question']
@@ -165,7 +166,12 @@ def to_messages(generated_data: Dataset) -> Dataset:
             {"role": "user", "content": user},
             {"role": "assistant", "content": assistant},
         ]
-        messages_list.append({"messages": messages})
+        # NOTE deduplicate messages
+        # messages_list.append({"messages": messages})
+        key = tuple([frozenset(d.items()) for d in messages])
+        if key not in seen:
+            seen.add(key)
+            messages_list.append({"messages": messages})
     messages_data = Dataset.from_list(messages_list)
     return messages_data
 
