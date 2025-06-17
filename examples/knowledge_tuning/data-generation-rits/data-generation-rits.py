@@ -51,6 +51,13 @@ force_ascii = True  # NOTE this is default
 # force_ascii = False
 
 # %% [markdown]
+# ### Configure Flow
+
+# %%
+flow_config = "synth_knowledge1.5"
+# flow_config = "synth_knowledge1.5_0617"
+
+# %% [markdown]
 # ### Configure Parallelism
 
 # %%
@@ -262,7 +269,7 @@ if generate_data_with_phi4:
 # %%
 if generate_data_with_phi4:
     # Create flow configuration for phi4
-    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_phi4_rits.yaml")
+    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_phi4_rits.yaml")
 
     # Initialize SDG pipeline for phi4
     sdg_phi4 = SDG(
@@ -378,7 +385,7 @@ if generate_data_with_llama3:
 # %%
 if generate_data_with_llama3:
     # Load the flow configuration from YAML file
-    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_llama3_rits.yaml")
+    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{data_lang}_llama3_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
@@ -495,7 +502,7 @@ if generate_data_with_mixtral:
 # %%
 if generate_data_with_mixtral:
     # Create flow configuration for mixtral
-    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"synth_knowledge1.5{data_lang}_mixtral_rits.yaml")
+    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_mixtral_rits.yaml")
 
     # Initialize SDG pipeline for mixtral
     sdg_mixtral = SDG(
