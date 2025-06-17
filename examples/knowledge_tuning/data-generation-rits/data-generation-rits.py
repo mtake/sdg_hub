@@ -118,8 +118,8 @@ seed_data_name = f"seed_data_{data_name}"
 seed_data_path = f"{seed_data_name}.jsonl"
 
 # %%
-duplicate_times = 1
-# duplicate_times = 10
+# duplicate_times = 1
+duplicate_times = 5
 
 data_name_duplicate = f"{data_name}-d{duplicate_times}" if duplicate_times > 1 else data_name
 
