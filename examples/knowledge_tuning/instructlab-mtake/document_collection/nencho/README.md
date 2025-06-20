@@ -40,11 +40,11 @@
 - [「令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表」(64ページ)の使い方 p.62-63](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/19.pdf)
 - [令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表 p.64](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/20.pdf)
 
-## Docling V2でpdfをmarkdownへの変換後の手作業
+## 項目別pdfをmarkdownへ変換後の手作業での修正
 ```bash
-sed -i 's/^G//g' ??.md  # ^V^G
-sed -i 's/^Z//g' ??.md  # ^V^Z
-sed -i 's/　/ /g' ??.md  # 全角スペース
+sed -i 's/^G//g' ??.md  # ^G (^V^Gで入力) を削除
+sed -i 's/^Z//g' ??.md  # ^Z (^V^Zで入力) を削除
+sed -i 's/　/ /g' ??.md  # 全角スペースを半角スペースに変換
 ```
 - 誤認識したテキストを削除する
 - 余分な空白、空行を削除する
@@ -65,3 +65,8 @@ sed -i 's/　/ /g' ??.md  # 全角スペース
 ⑼
 ⑽
 -->
+
+## 項目別markdownの結合
+```bash
+for f in ??.md; do cat $f >> nencho.md; done
+```
