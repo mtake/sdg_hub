@@ -68,5 +68,5 @@ sed -i 's/　/ /g' ??.md  # 全角スペースを半角スペースに変換
 
 ## 項目別markdownの結合
 ```bash
-for f in ??.md; do cat $f >> nencho.md; done
+rm nencho.md; for f in ??.md; do cat $f >> nencho.md; done
 ```
