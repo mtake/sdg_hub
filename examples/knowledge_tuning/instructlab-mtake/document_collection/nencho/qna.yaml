@@ -1,0 +1,209 @@
+created_by: someone
+version: 3
+domain: gensen
+seed_examples:
+  # 01.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          年末調整に関する相談にAIが自動で回答してくれる、チャットボットの名前は？
+        answer: |
+          税務職員ふたば
+      - question: |
+          年末調整手続の電子化を行うことのメリットは？
+        answer: |
+          給与の支払者（勤務先）及び給与所得者（従業員）それぞれにおいて、書類の作成や確認、保管などの業務全般が大幅に効率化されます。
+      - question: |
+          給料や報酬などについて源泉徴収をした所得税及び復興特別所得税の納期限は？
+        answer: |
+          納期の特例の承認を受けていない場合は、給料や報酬などを支払った月の翌月１０日が納期限です。
+          納期の特例の承認を受けている場合は、１月から６月までの分は７月１０日、７月から１２月までの分は翌年の１月２０日が納期限です。
+  # 02.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          給与所得以外の所得を含めた合計所得金額が1,805万円を超えると見込まれる人について、年末調整時に年調減税額を控除しますか？
+        answer: |
+          いいえ、年調減税額を控除しないで年末調整を行います。
+      - question: |
+          年調減税額の計算方法は？
+        answer: |
+          「本人30,000円」と「同一生計配偶者と扶養親族１人につき30,000円」との合計額となります。
+  # 03.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          年の中途で死亡により退職した人は、年末調整の対象となりますか？
+        answer: |
+          対象となります。
+      - question: |
+          継続して同一の雇用主に雇用されないいわゆる日雇労働者など（日額表の丙欄適用者）は年末調整の対象となりますか？
+        answer: |
+          対象となりません。
+      - question: |
+          年の中途で、海外の支店へ転勤したことなどの理由により、非居住者となった人について、年末調整を行う時はいつですか？
+        answer: |
+          非居住者となった時に行います。
+  # 05.md 省略
+  # 07.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          扶養親族とは？
+        answer: |
+          所得者と生計を一にする親族（配偶者、青色事業専従者として給与の支払を受ける人及び白色事業専従者を除きます。）で、合計所得金額が48万円以下の人をいいます。
+      - question: |
+          年少扶養親族とは？
+        answer: |
+          扶養親族のうち、年齢１６歳未満の人（平成２１年１月２日以後に生まれた人）をいいます。
+      - question: |
+          特定扶養親族とは？
+        answer: |
+          控除対象扶養親族のうち、年齢19歳以上23歳未満の人（平成１４年１月２日から平成１８年１月１日までの間に生まれた人）をいいます。
+      - question: |
+          老人扶養親族とは？
+        answer: |
+          控除対象扶養親族のうち、年齢７０歳以上の人（昭和３０年１月１日以前に生まれた人）をいいます。
+      - question: |
+          同居老親等とは？
+        answer: |
+          老人扶養親族のうち、所得者又はその配偶者（以下「所得者等」といいます。）の直系尊属（父母や祖父母などをいいます。）で所得者等のいずれかとの同居を常況としている人をいいます。
+      - question: |
+          同一生計配偶者とは？
+        answer: |
+          所得者と生計を一にする配偶者（青色事業専従者として給与の支払を受ける人及び白色事業専従者を除きます。）で、合計所得金額が48万円以下の人をいいます。
+      - question: |
+          同居特別障害者とは？
+        answer: |
+          同一生計配偶者又は扶養親族のうち特別障害者に該当する人で、所得者、所得者の配偶者又は所得者と生計を一にするその他の親族のいずれかとの同居を常況としている人をいいます。
+  # 08.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          基礎控除とは？
+        answer: |
+          所得者の合計所得金額が2,500万円以下である場合に、その所得者本人の所得金額の合計額から48万円を限度として、所得者の合計所得金額に応じた金額を控除するというものです。
+      - question: |
+          配偶者控除とは？
+        answer: |
+          所得者（合計所得金額が1,000万円以下の人に限ります。）が控除対象配偶者を有する場合に、その所得者本人の所得金額の合計額から38万円（配偶者が老人控除対象配偶者の場合は、48万円）を限度として、所得者の合計所得金額に応じた金額を控除するというものです。なお、配偶者の合計所得金額が48万円を超えるときは、配偶者控除の適用は受けられません。
+      - question: |
+          配偶者特別控除とは？
+        answer: |
+          所得者（合計所得金額が1,000万円以下の人に限ります。）が生計を一にする配偶者（合計所得金額が133万円以下の人に限ります。）で控除対象配偶者に該当しない人を有する場合に、その所得者本人の所得金額の合計額から38万円を限度として、所得者の合計所得金額と配偶者の合計所得金額に応じた金額を控除するというものです。なお、配偶者の合計所得金額が48万円以下であるとき又は133万円を超えるときは、配偶者特別控除の適用は受けられません。
+      - question: |
+          所得金額調整控除とは？
+        answer: |
+          所得者（その年中の給与の収入金額が850万円を超える人に限ります。）が、特別障害者に該当する場合又は年齢２３歳未満の扶養親族、特別障害者である同一生計配偶者若しくは特別障害者である扶養親族を有する場合に、その所得者本人の給与所得の金額から15万円を限度として、給与の収入金額（その給与の収入金額が1,000万円を超える場合には、1,000万円）から850万円を控除した金額の100分の10に相当する金額を給与所得の金額から控除するというものです。
+  # 09.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 10.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 11.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 12.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 13.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 14.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 15.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 17.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 18.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 19.md
+  - context: |
+    questions_and_answers:
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+      - question: |
+        answer: |
+  # 20.md
+  - context: |
+    questions_and_answers:
+      - question: |
+          控除対象扶養親族１人あたりの、控除額は？
+        answer: |
+          380,000円
+      - question: |
+          同居特別障害者１人あたりの、控除額は？
+        answer: |
+          750,000円
+      - question: |
+          勤労学生１人あたりの、控除額は？
+        answer: |
+          270,000円
+document_outline: |
+  令和６年分 年末調整のしかた
+document:
+  repo: 'https://example.com/example/taxonomy'
+  commit: 0000000000000000000000000000000000000000
+  patterns:
+    - nencho_all.pdf
