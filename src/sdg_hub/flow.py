@@ -20,25 +20,28 @@ Note:
 # Standard
 from abc import ABC
 from importlib import resources
-from typing import Optional, List, Dict, Any, Callable
+from typing import Any, Callable, Dict, List, Optional
 import operator
 import os
 
 # Third Party
-import yaml
 from datasets import Dataset
 from datasets.data_files import EmptyDatasetError
+from jinja2 import Environment, meta
+from rich.console import Console
+from rich.table import Table
+import yaml
 
 # Local
 from .blocks import *  # needed to register blocks
+from .logger_config import setup_logger
 from .prompts import *  # needed to register prompts
 from .registry import BlockRegistry, PromptRegistry
-from .logger_config import setup_logger
-
-from rich.console import Console
-from rich.table import Table
+from .utils.config_validation import validate_prompt_config_schema
+from .utils.validation_result import ValidationResult
 
 logger = setup_logger(__name__)
+
 
 OPERATOR_MAP: Dict[str, Callable] = {
     "operator.eq": operator.eq,
@@ -67,7 +70,7 @@ class Flow(ABC):
         self,
         llm_client: Any,
         num_samples_to_generate: Optional[int] = None,
-        log_level: Optional[str] = None
+        log_level: Optional[str] = None,
     ) -> None:
         """
         Initialize the Flow class.
@@ -105,9 +108,13 @@ class Flow(ABC):
         self.log_level = log_level or os.getenv("SDG_HUB_LOG_LEVEL", "normal").lower()
         self.console = Console() if self.log_level in ["verbose", "debug"] else None
 
-    def _log_block_info(self, index: int, total: int, name: str, ds: Dataset, stage: str) -> None:
+    def _log_block_info(
+        self, index: int, total: int, name: str, ds: Dataset, stage: str
+    ) -> None:
         if self.log_level in ["verbose", "debug"] and self.console:
-            table = Table(title=f"{stage} Block {index+1}/{total}: {name}", show_header=True)
+            table = Table(
+                title=f"{stage} Block {index + 1}/{total}: {name}", show_header=True
+            )
             table.add_column("Metric", style="cyan", no_wrap=True)
             table.add_column("Value", style="magenta")
             table.add_row("Rows", str(len(ds)))
@@ -202,7 +209,9 @@ class Flow(ABC):
 
             # Logging: always show basic progress unless in quiet mode
             if self.log_level in ["normal", "verbose", "debug"]:
-                logger.info(f"🔄 Running block {i+1}/{len(self.chained_blocks)}: {name}")
+                logger.info(
+                    f"🔄 Running block {i + 1}/{len(self.chained_blocks)}: {name}"
+                )
 
             # Log dataset shape before block (verbose/debug)
             self._log_block_info(i, len(self.chained_blocks), name, dataset, "Input")
@@ -233,6 +242,63 @@ class Flow(ABC):
                 logger.debug(f"Output dataset (truncated): {dataset}")
 
         return dataset
+
+    def validate_config_files(self) -> "ValidationResult":
+        """
+        Validate all configuration file paths referenced in the flow blocks.
+
+        This method checks that all config files specified via `config_path` or `config_paths`
+        in each block:
+            - Exist on the filesystem
+            - Are readable by the current process
+            - Are valid YAML files (optional format check)
+
+        Returns
+        -------
+        ValidationResult
+            An object indicating whether all config files passed validation, along with a list
+            of error messages for any missing, unreadable, or invalid YAML files.
+
+        Notes
+        -----
+        This method is automatically called at the end of `get_flow_from_file()` to ensure
+        early detection of misconfigured blocks.
+        """
+        errors = []
+
+        def check_file(path: str, context: str):
+            if not os.path.isfile(path):
+                errors.append(f"[{context}] File does not exist: {path}")
+            else:
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        config_data = yaml.safe_load(f)
+                        _, validation_errors = validate_prompt_config_schema(config_data, path)
+
+                        if validation_errors:
+                            errors.extend(validation_errors)
+
+                except PermissionError:
+                    errors.append(f"[{context}] File is not readable: {path}")
+                except yaml.YAMLError as e:
+                    errors.append(f"[{context}] YAML load failed: {path} ({e})")
+
+        for i, block in enumerate(self.chained_blocks or []):
+            block_name = block["block_config"].get("block_name", f"block_{i}")
+
+            config_path = block["block_config"].get("config_path")
+            if config_path:
+                check_file(config_path, f"{block_name}.config_path")
+
+            config_paths = block["block_config"].get("config_paths")
+            if isinstance(config_paths, list):
+                for idx, path in enumerate(config_paths):
+                    check_file(path, f"{block_name}.config_paths[{idx}]")
+            elif isinstance(config_paths, dict):
+                for key, path in config_paths.items():
+                    check_file(path, f"{block_name}.config_paths['{key}']")
+
+        return ValidationResult(valid=(len(errors) == 0), errors=errors)
 
     def get_flow_from_file(self, yaml_path: str) -> "Flow":
         """Load and initialize flow configuration from a YAML file.
@@ -332,4 +398,77 @@ class Flow(ABC):
 
         # Store the chained blocks and return self
         self.chained_blocks = flow
+
+        # Validate config files
+        result = self.validate_config_files()
+        if not result.valid:
+            raise ValueError("Invalid config files:\n\n".join(result.errors))
+
         return self
+
+    def validate_flow(self, dataset: Dataset) -> "ValidationResult":
+        """
+        Validate that all required dataset columns are present before executing the flow.
+
+        This includes:
+        - Columns referenced in Jinja templates for LLM blocks
+        - Columns required by specific utility blocks (e.g. filter_column, choice_col, etc.)
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The input dataset to validate against.
+
+        Returns
+        -------
+        ValidationResult
+            Whether the dataset has all required columns, and which ones are missing.
+        """
+        errors = []
+        all_columns = set(dataset.column_names)
+
+        for i, block in enumerate(self.chained_blocks or []):
+            name = block["block_config"].get("block_name", f"block_{i}")
+            block_type = block["block_type"]
+            config = block["block_config"]
+
+            # LLM Block: parse Jinja vars
+            cls_name = block_type.__name__ if isinstance(block_type, type) else block_type.__class__.__name__
+            logger.info(f"Validating block: {name} ({cls_name})")
+            if "LLM" in cls_name:
+                config_path = config.get("config_path")
+                if config_path and os.path.isfile(config_path):
+                    with open(config_path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                        env = Environment()
+                        ast = env.parse(content)
+                        vars_found = meta.find_undeclared_variables(ast)
+                        for var in vars_found:
+                            if var not in all_columns:
+                                errors.append(f"[{name}] Missing column for prompt var: '{var}'")
+
+            # FilterByValueBlock
+            if "FilterByValueBlock" in str(block_type):
+                col = config.get("filter_column")
+                if col and col not in all_columns:
+                    errors.append(f"[{name}] Missing filter_column: '{col}'")
+
+            # SelectorBlock
+            if "SelectorBlock" in str(block_type):
+                col = config.get("choice_col")
+                if col and col not in all_columns:
+                    errors.append(f"[{name}] Missing choice_col: '{col}'")
+
+                choice_map = config.get("choice_map", {})
+                for col in choice_map.values():
+                    if col not in all_columns:
+                        errors.append(f"[{name}] choice_map references missing column: '{col}'")
+
+            # CombineColumnsBlock
+            if "CombineColumnsBlock" in str(block_type):
+                cols = config.get("columns", [])
+                for col in cols:
+                    if col not in all_columns:
+                        errors.append(f"[{name}] CombineColumnsBlock requires column: '{col}'")
+
+        return ValidationResult(valid=(len(errors) == 0), errors=errors)
