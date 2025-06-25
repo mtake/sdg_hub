@@ -15,7 +15,7 @@
 # %autoreload 2
 
 # %% [markdown]
-# ## Setup Instructions
+# ## Configurations
 # 
 # Before running this notebook, you'll need to:
 # 
@@ -72,7 +72,7 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # save_freq = 1000   # Frequency (in batches) at which to save checkpoints, by default 2.
 
 # %% [markdown]
-# ### Setup environments for [RITS](https://rits.fmaas.res.ibm.com/)
+# ### Configure [RITS](https://rits.fmaas.res.ibm.com/) Inference Server
 
 # %%
 import os
@@ -96,6 +96,14 @@ model_dict["mistralai/mixtral-8x7B-instruct-v0.1"] = "https://inference-3scale-a
 def get_base_url(model_name: str)-> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
     return f"{endpoint}/v1"
+
+# %% [markdown]
+# ### Configure Models
+
+# %%
+use_phi4 = True
+use_llama3 = False
+use_mixtral = False
 
 # %% [markdown]
 # ### Configure Seed Data
@@ -238,15 +246,7 @@ def print_generated_data(f, generated_data_i, model_name: str) -> None:
     f.write(generated_data_i['response'] + "\n")
 
 # %% [markdown]
-# ### Select Models
-
-# %%
-use_phi4 = True
-use_llama3 = False
-use_mixtral = False
-
-# %% [markdown]
-# ## SDG with phi4 Model
+# ## SDG with phi4
 
 # %% [markdown]
 # ### Setting up phi4 Model
@@ -267,6 +267,8 @@ if use_phi4:
 
 # %% [markdown]
 # ### Configure phi4 Prompt Template
+# 
+# We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
 if use_phi4:
@@ -282,6 +284,11 @@ if use_phi4:
 
 # %% [markdown]
 # ### Configure phi4 Pipeline
+# 
+# Now we'll set up our Synthetic Data Generation (SDG) pipeline with the following components:
+# 1. SDG Flow configuration from YAML
+# 2. SDG Pipeline setup
+# 3. SDG configuration with batch processing, number of workers, and save frequency parameters
 
 # %%
 if use_phi4:
@@ -298,6 +305,8 @@ if use_phi4:
 
 # %% [markdown]
 # ### Generate Data with phi4
+# 
+# Now we'll use our configured pipeline to generate synthetic question-answer pairs.
 
 # %%
 if use_phi4:
@@ -347,7 +356,7 @@ if use_phi4:
     print(f"Wrote {k} examples to {output_file}", flush=True)
 
 # %% [markdown]
-# ## (Optional) SDG with llama3 Model
+# ## (Optional) SDG with llama3
 
 # %% [markdown]
 # ### Setting up llama3 Model
@@ -385,7 +394,7 @@ if use_llama3:
         return llama3_tokenizer.chat_template
 
 # %% [markdown]
-# ### Configure the Data Generation Pipeline
+# ### Configure llama3 Pipeline
 # 
 # Now we'll set up our Synthetic Data Generation (SDG) pipeline with the following components:
 # 1. SDG Flow configuration from YAML
@@ -458,12 +467,10 @@ if use_llama3:
     print(f"Wrote {k} examples to {output_file}", flush=True)
 
 # %% [markdown]
-# ## (Optional) SDG with mixtral Model
+# ## (Optional) SDG with mixtral
 
 # %% [markdown]
-# ### Setting up mixstal Model
-# 
-# For comparison, we'll also generate data using the mixtral model.
+# ### Setting up mixtral Model
 
 # %%
 if use_mixtral:
@@ -499,7 +506,10 @@ if use_mixtral:
 # %% [markdown]
 # ### Configure mixtral Pipeline
 # 
-# Set up a similar pipeline for mixtral model generation.
+# Now we'll set up our Synthetic Data Generation (SDG) pipeline with the following components:
+# 1. SDG Flow configuration from YAML
+# 2. SDG Pipeline setup
+# 3. SDG configuration with batch processing, number of workers, and save frequency parameters
 
 # %%
 if use_mixtral:
@@ -517,7 +527,7 @@ if use_mixtral:
 # %% [markdown]
 # ### Generate Data with mixtral
 # 
-# Generate synthetic data using the mixtral model for comparison.
+# Now we'll use our configured pipeline to generate synthetic question-answer pairs.
 
 # %%
 if use_mixtral:
@@ -567,7 +577,7 @@ if use_mixtral:
     print(f"Wrote {k} examples to {output_file}", flush=True)
 
 # %% [markdown]
-# ## Compare Generated Data
+# ## (Optional) Compare Generated Data
 # 
 # Let's compare the outputs from both models by saving them to a markdown file for easy review.
 
