@@ -241,9 +241,9 @@ def print_generated_data(f, generated_data_i, model_name: str) -> None:
 # ### Select Models
 
 # %%
-generate_data_with_phi4 = True
-generate_data_with_llama3 = False
-generate_data_with_mixtral = False
+use_phi4 = True
+use_llama3 = False
+use_mixtral = False
 
 # %% [markdown]
 # ## SDG with phi4 Model
@@ -252,7 +252,7 @@ generate_data_with_mixtral = False
 # ### Setting up phi4 Model
 
 # %%
-if generate_data_with_phi4:
+if use_phi4:
     # Configure OpenAI client
     phi4_teacher_model = "microsoft/phi-4"
     phi4_base_url = get_base_url(phi4_teacher_model)
@@ -269,7 +269,7 @@ if generate_data_with_phi4:
 # ### Configure phi4 Prompt Template
 
 # %%
-if generate_data_with_phi4:
+if use_phi4:
     phi4_teacher_model_hf = "microsoft/phi-4"
 
     # Load the tokenizer to get the chat template
@@ -284,7 +284,7 @@ if generate_data_with_phi4:
 # ### Configure phi4 Pipeline
 
 # %%
-if generate_data_with_phi4:
+if use_phi4:
     # Load the flow configuration from YAML file
     flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_phi4_rits.yaml")
 
@@ -300,7 +300,7 @@ if generate_data_with_phi4:
 # ### Generate Data with phi4
 
 # %%
-if generate_data_with_phi4:
+if use_phi4:
     # Generate data and save checkpoints
     generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_phi4")
 
@@ -319,7 +319,7 @@ if generate_data_with_phi4:
 # ### Compare Generated Data with phi4
 
 # %%
-if generate_data_with_phi4:
+if use_phi4:
     # Save comparison results to markdown file
     output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_phi4.md"
 
@@ -353,7 +353,7 @@ if generate_data_with_phi4:
 # ### Setting up llama3 Model
 
 # %%
-if generate_data_with_llama3:
+if use_llama3:
     # Configure OpenAI client
     llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
     llama3_base_url = get_base_url(llama3_teacher_model)
@@ -372,7 +372,7 @@ if generate_data_with_llama3:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if generate_data_with_llama3:
+if use_llama3:
     # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
     llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
 
@@ -393,7 +393,7 @@ if generate_data_with_llama3:
 # 3. SDG configuration with batch processing, number of workers, and save frequency parameters
 
 # %%
-if generate_data_with_llama3:
+if use_llama3:
     # Load the flow configuration from YAML file
     flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{data_lang}_llama3_rits.yaml")
 
@@ -411,7 +411,7 @@ if generate_data_with_llama3:
 # Now we'll use our configured pipeline to generate synthetic question-answer pairs.
 
 # %%
-if generate_data_with_llama3:
+if use_llama3:
     # Generate data and save checkpoints
     generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama3")
 
@@ -430,7 +430,7 @@ if generate_data_with_llama3:
 # ### Compare Generated Data with llama3
 
 # %%
-if generate_data_with_llama3:
+if use_llama3:
     # Save comparison results to markdown file
     output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_llama3.md"
 
@@ -466,7 +466,7 @@ if generate_data_with_llama3:
 # For comparison, we'll also generate data using the mixtral model.
 
 # %%
-if generate_data_with_mixtral:
+if use_mixtral:
     # Configure OpenAI client
     mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
     mixtral_base_url = get_base_url(mixtral_teacher_model)
@@ -485,7 +485,7 @@ if generate_data_with_mixtral:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if generate_data_with_mixtral:
+if use_mixtral:
     mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
     # Load the tokenizer to get the chat template
@@ -502,7 +502,7 @@ if generate_data_with_mixtral:
 # Set up a similar pipeline for mixtral model generation.
 
 # %%
-if generate_data_with_mixtral:
+if use_mixtral:
     # Load the flow configuration from YAML file
     flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_mixtral_rits.yaml")
 
@@ -520,7 +520,7 @@ if generate_data_with_mixtral:
 # Generate synthetic data using the mixtral model for comparison.
 
 # %%
-if generate_data_with_mixtral:
+if use_mixtral:
     # Generate data and save checkpoints
     generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_mixtral")
 
@@ -539,7 +539,7 @@ if generate_data_with_mixtral:
 # ### Compare Generated Data with mixtral
 
 # %%
-if generate_data_with_mixtral:
+if use_mixtral:
     # Save comparison results to markdown file
     output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_mixtral.md"
 
@@ -572,51 +572,60 @@ if generate_data_with_mixtral:
 # Let's compare the outputs from both models by saving them to a markdown file for easy review.
 
 # %%
-# Save comparison results to markdown file
-output_file = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
+used_models = 0
 
 if 'generated_data_phi4' not in locals():
     generated_data_phi4 = []
+else:
+    used_models += 1
 
 if 'generated_data_llama3' not in locals():
     generated_data_llama3 = []
+else:
+    used_models += 1
 
 if 'generated_data_mixtral' not in locals():
     generated_data_mixtral = []
+else:
+    used_models += 1
 
-with open(output_file, "w") as f:
-    num_generated_data_phi4 = len(generated_data_phi4)
-    num_generated_data_llama3 = len(generated_data_llama3)
-    num_generated_data_mixtral = len(generated_data_mixtral)
+if used_models > 1:
+    # Save comparison results to markdown file
+    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
 
-    # Number of examples to compare
-    k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_mixtral)
+    with open(output_file, "w") as f:
+        num_generated_data_phi4 = len(generated_data_phi4)
+        num_generated_data_llama3 = len(generated_data_llama3)
+        num_generated_data_mixtral = len(generated_data_mixtral)
 
-    # Compare generated Q&A pairs
-    for i in range(k):
-        f.write(f"# Example #{i+1}\n\n")
+        # Number of examples to compare
+        k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_mixtral)
 
-        if i < num_generated_data_phi4:
-            # phi4 results
-            generated_data_i = generated_data_phi4[i]
-            model_name = "phi4"
-            print_generated_data(f, generated_data_i, model_name)
+        # Compare generated Q&A pairs
+        for i in range(k):
+            f.write(f"# Example #{i+1}\n\n")
 
-        if i < num_generated_data_llama3:
-            # llama3 results
-            generated_data_i = generated_data_llama3[i]
-            model_name = "llama3"
-            print_generated_data(f, generated_data_i, model_name)
+            if i < num_generated_data_phi4:
+                # phi4 results
+                generated_data_i = generated_data_phi4[i]
+                model_name = "phi4"
+                print_generated_data(f, generated_data_i, model_name)
 
-        if i < num_generated_data_mixtral:
-            # mixtral results
-            generated_data_i = generated_data_mixtral[i]
-            model_name = "mixtral"
-            print_generated_data(f, generated_data_i, model_name)
+            if i < num_generated_data_llama3:
+                # llama3 results
+                generated_data_i = generated_data_llama3[i]
+                model_name = "llama3"
+                print_generated_data(f, generated_data_i, model_name)
 
-        f.write("\n")
+            if i < num_generated_data_mixtral:
+                # mixtral results
+                generated_data_i = generated_data_mixtral[i]
+                model_name = "mixtral"
+                print_generated_data(f, generated_data_i, model_name)
 
-print(f"Wrote {k} examples to {output_file}", flush=True)
+            f.write("\n")
+
+    print(f"Wrote {k} examples to {output_file}", flush=True)
 
 # %% [markdown]
 # ## Production Usage
