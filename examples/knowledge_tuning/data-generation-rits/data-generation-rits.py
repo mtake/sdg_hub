@@ -1,7 +1,7 @@
 # %% [markdown]
 # # Synthetic Data Generation Tutorial using phi4, llama3, and mixtral
 # 
-# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from documents using large language models like phi4 and llama3. We will also generate data using mixtral model for comparison. We'll cover:
+# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from documents using large language models like phi4. We will also generate data using llama3 and mixtral models for comparison. We'll cover:
 # 
 # 1. Setting up the environment
 # 2. Connecting to LLM servers
@@ -131,19 +131,24 @@ data_name_duplicate = f"{data_name}-d{duplicate_times}" if duplicate_times > 1 e
 # %%
 # Load the seed data from JSON file
 ds = load_dataset('json', data_files=seed_data_path, split='train')
+orig_ds = ds
 
+# %% [markdown]
+# (Optional) Sample Seed Data
+
+# %%
 # For testing, we'll use just one example
 # ds = ds.select(range(1))
 
 # %% [markdown]
-# ### (Optional) Duplicate Seed Data
+# (Optional) Duplicate Seed Data
 
 # %%
 if duplicate_times > 1:
     ds = ds.repeat(duplicate_times)
 
 # %% [markdown]
-# ### Assign Seed ID
+# Add Seed ID
 
 # %%
 # Add seed_id column to preserve repetition in seed data
@@ -160,9 +165,9 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 def to_messages(generated_data: Dataset) -> Dataset:
     seen = set()
     messages_list: list[dict[str, any]] = []
-    for generated_datum in generated_data:
-        user = generated_datum['question']
-        assistant = generated_datum['response']
+    for generated_data_i in generated_data:
+        user = generated_data_i['question']
+        assistant = generated_data_i['response']
         messages = [
             {"role": "user", "content": user},
             {"role": "assistant", "content": assistant},
@@ -176,15 +181,15 @@ def to_messages(generated_data: Dataset) -> Dataset:
     messages_data = Dataset.from_list(messages_list)
     return messages_data
 
-def get_dataset_type(generated_data_i: dict[str, any]) -> str:
-    _dataset_type = generated_data_i.get('dataset_type', None)
-    if _dataset_type is not None:
-        _dataset_type = f" ({_dataset_type})"
+def document_type(generated_data_i: dict[str, any]) -> str:
+    dataset_type = generated_data_i.get('dataset_type', None)
+    if dataset_type is not None:
+        _document_type = f" ({dataset_type})"
     else:
-        _dataset_type = ""
-    return _dataset_type
+        _document_type = ""
+    return _document_type
 
-def write_input(f, generated_data_i) -> None:
+def print_seed_data(f, generated_data_i) -> None:
     icl_document = generated_data_i.get('icl_document', None)
     if icl_document is not None:
         f.write(f"### In-Context Learning Example\n\n")
@@ -223,6 +228,15 @@ def write_input(f, generated_data_i) -> None:
         f.write(f"### Raw Document (not used for Q&A generation)\n")
         f.write(raw_document + "\n\n")
 
+def print_generated_data(f, generated_data_i, model_name: str) -> None:
+    print_seed_data(f, generated_data_i)
+    f.write(f"### Document{document_type(generated_data_i)} from {model_name}\n")
+    f.write(generated_data_i['document'] + "\n\n")
+    f.write(f"### Result from {model_name}\n")
+    f.write(generated_data_i['question'] + "\n")
+    f.write("***\n")
+    f.write(generated_data_i['response'] + "\n")
+
 # %% [markdown]
 # ### Select Models
 
@@ -239,33 +253,29 @@ generate_data_with_mixtral = False
 
 # %%
 if generate_data_with_phi4:
-    # Connect to phi4 model running on RITS
+    # Configure OpenAI client
     phi4_teacher_model = "microsoft/phi-4"
-    phi4_endpoint = get_base_url(phi4_teacher_model)
+    phi4_base_url = get_base_url(phi4_teacher_model)
 
     phi4_client = OpenAI(
         api_key="EMPTY",
-        base_url=phi4_endpoint,
+        base_url=phi4_base_url,
         default_headers=default_headers,
     )
 
-    # Verify connection to phi4 model
-    print(f"Connected to phi4 model: {phi4_teacher_model}", flush=True)
+    print(f"Connected to model: {phi4_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure phi4 Prompt Template
 
 # %%
 if generate_data_with_phi4:
-    # Register the phi4 chat template
-    # This ensures proper formatting of prompts for the model
-
     phi4_teacher_model_hf = "microsoft/phi-4"
 
     # Load the tokenizer to get the chat template
     phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
 
-    # Register the chat template in our prompt registry
+    # Register the chat template
     @PromptRegistry.register(phi4_teacher_model)
     def phi4_chat_template():
         return phi4_tokenizer.chat_template
@@ -275,10 +285,10 @@ if generate_data_with_phi4:
 
 # %%
 if generate_data_with_phi4:
-    # Create flow configuration for phi4
+    # Load the flow configuration from YAML file
     flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_phi4_rits.yaml")
 
-    # Initialize SDG pipeline for phi4
+    # Initialize the SDG pipeline with processing parameters
     sdg_phi4 = SDG(
         [flow_phi4],
         num_workers=num_workers,
@@ -291,7 +301,7 @@ if generate_data_with_phi4:
 
 # %%
 if generate_data_with_phi4:
-    # Generate data using phi4 model
+    # Generate data and save checkpoints
     generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_phi4")
 
     generated_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_phi4.jsonl"
@@ -306,12 +316,12 @@ if generate_data_with_phi4:
     print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
 # %% [markdown]
-# ### Output Generated Data with phi4
+# ### Compare Generated Data with phi4
 
 # %%
 if generate_data_with_phi4:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name_duplicate}_{timestamp}_phi4.md"
+    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_phi4.md"
 
     if 'generated_data_phi4' not in locals():
         generated_data_phi4 = []
@@ -328,13 +338,9 @@ if generate_data_with_phi4:
 
             if i < num_generated_data_phi4:
                 # phi4 results
-                write_input(f, generated_data_phi4[i])
-                f.write(f"### Document{get_dataset_type(generated_data_phi4[i])} from phi4\n")
-                f.write(generated_data_phi4[i]['document'] + "\n\n")
-                f.write("### Result from phi4\n")
-                f.write(generated_data_phi4[i]['question'] + "\n")
-                f.write("*******************************\n")
-                f.write(generated_data_phi4[i]['response'] + "\n")
+                generated_data_i = generated_data_phi4[i]
+                model_name = "phi4"
+                print_generated_data(f, generated_data_i, model_name)
 
             f.write("\n")
 
@@ -348,17 +354,17 @@ if generate_data_with_phi4:
 
 # %%
 if generate_data_with_llama3:
-    # Configure OpenAI client to connect to RITS server
+    # Configure OpenAI client
     llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
-    llama3_endpoint = get_base_url(llama3_teacher_model)
+    llama3_base_url = get_base_url(llama3_teacher_model)
 
     llama3_client = OpenAI(
         api_key="EMPTY",
-        base_url=llama3_endpoint,
+        base_url=llama3_base_url,
         default_headers=default_headers,
     )
 
-    print(f"Connected to llama3 model: {llama3_teacher_model}", flush=True)
+    print(f"Connected to model: {llama3_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure llama3 Prompt Template
@@ -367,16 +373,13 @@ if generate_data_with_llama3:
 
 # %%
 if generate_data_with_llama3:
-    # Register the llama3 chat template
-    # This ensures proper formatting of prompts for the model
-
     # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
     llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
 
     # Load the tokenizer to get the chat template
     llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
 
-    # Register the chat template in our prompt registry
+    # Register the chat template
     @PromptRegistry.register(llama3_teacher_model)
     def llama3_chat_template():
         return llama3_tokenizer.chat_template
@@ -409,7 +412,7 @@ if generate_data_with_llama3:
 
 # %%
 if generate_data_with_llama3:
-    # Generate synthetic data and save checkpoints
+    # Generate data and save checkpoints
     generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama3")
 
     generated_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_llama3.jsonl"
@@ -424,12 +427,12 @@ if generate_data_with_llama3:
     print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
 # %% [markdown]
-# ### Output Generated Data with llama3
+# ### Compare Generated Data with llama3
 
 # %%
 if generate_data_with_llama3:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name_duplicate}_{timestamp}_llama3.md"
+    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_llama3.md"
 
     if 'generated_data_llama3' not in locals():
         generated_data_llama3 = []
@@ -445,14 +448,10 @@ if generate_data_with_llama3:
             f.write(f"# Example #{i+1}\n\n")
 
             if i < num_generated_data_llama3:
-                # LLaMA 3.3 results
-                write_input(f, generated_data_llama3[i])
-                f.write(f"### Document{get_dataset_type(generated_data_llama3[i])} from llama3\n")
-                f.write(generated_data_llama3[i]['document'] + "\n\n")
-                f.write("### Result from llama3\n")
-                f.write(generated_data_llama3[i]['question'] + "\n")
-                f.write("*******************************\n")
-                f.write(generated_data_llama3[i]['response'] + "\n")
+                # llama3 results
+                generated_data_i = generated_data_llama3[i]
+                model_name = "llama3"
+                print_generated_data(f, generated_data_i, model_name)
 
             f.write("\n")
 
@@ -468,18 +467,17 @@ if generate_data_with_llama3:
 
 # %%
 if generate_data_with_mixtral:
-    # Connect to mixtral model running on RITS
+    # Configure OpenAI client
     mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
-    mixtral_endpoint = get_base_url(mixtral_teacher_model)
+    mixtral_base_url = get_base_url(mixtral_teacher_model)
 
     mixtral_client = OpenAI(
         api_key="EMPTY",
-        base_url=mixtral_endpoint,
+        base_url=mixtral_base_url,
         default_headers=default_headers,
     )
 
-    # Verify connection to mixtral model
-    print(f"Connected to mixtral model: {mixtral_teacher_model}", flush=True)
+    print(f"Connected to model: {mixtral_teacher_model}", flush=True)
 
 # %% [markdown]
 # ### Configure mixtral Prompt Template
@@ -488,15 +486,12 @@ if generate_data_with_mixtral:
 
 # %%
 if generate_data_with_mixtral:
-    # Register the mixtral chat template
-    # This ensures proper formatting of prompts for the model
-
     mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
     # Load the tokenizer to get the chat template
     mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
 
-    # Register the chat template in our prompt registry
+    # Register the chat template
     @PromptRegistry.register(mixtral_teacher_model)
     def mixtral_chat_template():
         return mixtral_tokenizer.chat_template
@@ -508,10 +503,10 @@ if generate_data_with_mixtral:
 
 # %%
 if generate_data_with_mixtral:
-    # Create flow configuration for mixtral
+    # Load the flow configuration from YAML file
     flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_mixtral_rits.yaml")
 
-    # Initialize SDG pipeline for mixtral
+    # Initialize the SDG pipeline with processing parameters
     sdg_mixtral = SDG(
         [flow_mixtral],
         num_workers=num_workers,
@@ -526,7 +521,7 @@ if generate_data_with_mixtral:
 
 # %%
 if generate_data_with_mixtral:
-    # Generate data using mixtral model
+    # Generate data and save checkpoints
     generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_mixtral")
 
     generated_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_mixtral.jsonl"
@@ -541,12 +536,12 @@ if generate_data_with_mixtral:
     print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
 # %% [markdown]
-# ### Output Generated Data with mixtral
+# ### Compare Generated Data with mixtral
 
 # %%
 if generate_data_with_mixtral:
     # Save comparison results to markdown file
-    output_file = f"model_output_{data_name_duplicate}_{timestamp}_mixtral.md"
+    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_mixtral.md"
 
     if 'generated_data_mixtral' not in locals():
         generated_data_mixtral = []
@@ -563,13 +558,9 @@ if generate_data_with_mixtral:
 
             if i < num_generated_data_mixtral:
                 # mixtral results
-                write_input(f, generated_data_mixtral[i])
-                f.write(f"### Document{get_dataset_type(generated_data_mixtral[i])} from mixtral\n")
-                f.write(generated_data_mixtral[i]['document'] + "\n\n")
-                f.write("### Result from mixtral\n")
-                f.write(generated_data_mixtral[i]['question'] + "\n")
-                f.write("*******************************\n")
-                f.write(generated_data_mixtral[i]['response'] + "\n")
+                generated_data_i = generated_data_mixtral[i]
+                model_name = "mixtral"
+                print_generated_data(f, generated_data_i, model_name)
 
             f.write("\n")
 
@@ -607,33 +598,21 @@ with open(output_file, "w") as f:
 
         if i < num_generated_data_phi4:
             # phi4 results
-            write_input(f, generated_data_phi4[i])
-            f.write(f"### Document{get_dataset_type(generated_data_phi4[i])} from phi4\n")
-            f.write(generated_data_phi4[i]['document'] + "\n\n")
-            f.write("### Result from phi4\n")
-            f.write(generated_data_phi4[i]['question'] + "\n")
-            f.write("*******************************\n")
-            f.write(generated_data_phi4[i]['response'] + "\n")
+            generated_data_i = generated_data_phi4[i]
+            model_name = "phi4"
+            print_generated_data(f, generated_data_i, model_name)
 
         if i < num_generated_data_llama3:
             # llama3 results
-            write_input(f, generated_data_llama3[i])
-            f.write(f"### Document{get_dataset_type(generated_data_llama3[i])} from llama3\n")
-            f.write(generated_data_llama3[i]['document'] + "\n\n")
-            f.write("### Result from llama3\n")
-            f.write(generated_data_llama3[i]['question'] + "\n")
-            f.write("*******************************\n")
-            f.write(generated_data_llama3[i]['response'] + "\n")
+            generated_data_i = generated_data_llama3[i]
+            model_name = "llama3"
+            print_generated_data(f, generated_data_i, model_name)
 
         if i < num_generated_data_mixtral:
             # mixtral results
-            write_input(f, generated_data_mixtral[i])
-            f.write(f"### Document{get_dataset_type(generated_data_mixtral[i])} from mixtral\n")
-            f.write(generated_data_mixtral[i]['document'] + "\n\n")
-            f.write("### Result from mixtral\n")
-            f.write(generated_data_mixtral[i]['question'] + "\n")
-            f.write("*******************************\n")
-            f.write(generated_data_mixtral[i]['response'] + "\n")
+            generated_data_i = generated_data_mixtral[i]
+            model_name = "mixtral"
+            print_generated_data(f, generated_data_i, model_name)
 
         f.write("\n")
 
