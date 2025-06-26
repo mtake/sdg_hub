@@ -72,6 +72,18 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # save_freq = 1000   # Frequency (in batches) at which to save checkpoints, by default 2.
 
 # %% [markdown]
+# ### Configure Models
+
+# %%
+phi4_teacher_model = "microsoft/phi-4"
+llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
+mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
+
+use_phi4 = True
+use_llama3 = False
+use_mixtral = False
+
+# %% [markdown]
 # ### Configure [RITS](https://rits.fmaas.res.ibm.com/) Inference Server
 
 # %%
@@ -89,21 +101,13 @@ assert res.status_code == 200
 model_list: list[dict[str, str]] = res.json()
 model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
 # NOTE avoid clashes in model_name
-model_dict["meta-llama/llama-3-3-70b-instruct"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
-model_dict["microsoft/phi-4"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-model_dict["mistralai/mixtral-8x7B-instruct-v0.1"] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
+model_dict[phi4_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+model_dict[llama3_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+model_dict[mixtral_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 
 def get_base_url(model_name: str)-> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
     return f"{endpoint}/v1"
-
-# %% [markdown]
-# ### Configure Models
-
-# %%
-use_phi4 = True
-use_llama3 = False
-use_mixtral = False
 
 # %% [markdown]
 # ### Configure Seed Data
@@ -200,50 +204,50 @@ def document_type(generated_data_i: dict[str, any]) -> str:
 def print_seed_data(f, generated_data_i) -> None:
     icl_document = generated_data_i.get('icl_document', None)
     if icl_document is not None:
-        f.write(f"### In-Context Learning Example\n\n")
-        f.write(f"#### ICL Document\n")
+        f.write(f"### ICL example\n\n")
+        f.write(f"#### icl_document\n")
         f.write(icl_document + "\n\n")
     icl_query_1 = generated_data_i.get('icl_query_1', None)
     if icl_query_1 is not None:
-        f.write(f"#### ICL Query 1\n")
+        f.write(f"#### icl_query_1\n")
         f.write(icl_query_1 + "\n\n")
     icl_response_1 = generated_data_i.get('icl_response_1', None)
     if icl_response_1 is not None:
-        f.write(f"#### ICL Response 1\n")
+        f.write(f"#### icl_response_1\n")
         f.write(icl_response_1 + "\n\n")
     icl_query_2 = generated_data_i.get('icl_query_2', None)
     if icl_query_2 is not None:
-        f.write(f"#### ICL Query 2\n")
+        f.write(f"#### icl_query_2\n")
         f.write(icl_query_2 + "\n\n")
     icl_response_2 = generated_data_i.get('icl_response_2', None)
     if icl_response_2 is not None:
-        f.write(f"#### ICL Response 2\n")
+        f.write(f"#### icl_response_2\n")
         f.write(icl_response_2 + "\n\n")
     icl_query_3 = generated_data_i.get('icl_query_3', None)
     if icl_query_3 is not None:
-        f.write(f"#### ICL Query 3\n")
+        f.write(f"#### icl_query_3\n")
         f.write(icl_query_3 + "\n\n")
     icl_response_3 = generated_data_i.get('icl_response_3', None)
     if icl_response_3 is not None:
-        f.write(f"#### ICL Response 3\n")
+        f.write(f"#### icl_response_3\n")
         f.write(icl_response_3 + "\n\n")
     document_outline = generated_data_i.get('document_outline', None)
     if document_outline is not None:
-        f.write(f"### Document Outline\n")
+        f.write(f"### document_outline\n")
         f.write(document_outline + "\n\n")
     raw_document = generated_data_i.get('raw_document', None)
     if raw_document is not None:
-        f.write(f"### Raw Document (not used for Q&A generation)\n")
+        f.write(f"### raw_document (not used for Q&A generation)\n")
         f.write(raw_document + "\n\n")
 
 def print_generated_data(f, generated_data_i, model_name: str) -> None:
     print_seed_data(f, generated_data_i)
-    f.write(f"### Document{document_type(generated_data_i)} from {model_name}\n")
+    f.write(f"### document{document_type(generated_data_i)} from {model_name}\n")
     f.write(generated_data_i['document'] + "\n\n")
-    f.write(f"### Result from {model_name}\n")
-    f.write(generated_data_i['question'] + "\n")
-    f.write("***\n")
-    f.write(generated_data_i['response'] + "\n")
+    f.write(f"### question from {model_name}\n")
+    f.write(generated_data_i['question'] + "\n\n")
+    f.write(f"### response from {model_name}\n")
+    f.write(generated_data_i['response'] + "\n\n")
 
 # %% [markdown]
 # ## SDG with phi4
@@ -254,7 +258,6 @@ def print_generated_data(f, generated_data_i, model_name: str) -> None:
 # %%
 if use_phi4:
     # Configure OpenAI client
-    phi4_teacher_model = "microsoft/phi-4"
     phi4_base_url = get_base_url(phi4_teacher_model)
 
     phi4_client = OpenAI(
@@ -368,7 +371,6 @@ if use_phi4:
 # %%
 if use_llama3:
     # Configure OpenAI client
-    llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
     llama3_base_url = get_base_url(llama3_teacher_model)
 
     llama3_client = OpenAI(
@@ -483,7 +485,6 @@ if use_llama3:
 # %%
 if use_mixtral:
     # Configure OpenAI client
-    mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
     mixtral_base_url = get_base_url(mixtral_teacher_model)
 
     mixtral_client = OpenAI(
