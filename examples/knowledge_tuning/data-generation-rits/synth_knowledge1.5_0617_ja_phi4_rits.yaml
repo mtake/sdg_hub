@@ -58,7 +58,7 @@
 
 - block_type: LLMBlock
   block_config:
-    block_name: knowledge generation
+    block_name: knowledge question generation
     config_path: configs/knowledge_ja/generate_questions_ja.yaml
     model_id: microsoft/phi-4
     output_cols:
@@ -72,7 +72,7 @@
 
 - block_type: LLMBlock
   block_config:
-    block_name: knowledge generation
+    block_name: knowledge answer generation
     config_path: configs/knowledge_ja/generate_responses_ja.yaml
     model_id: microsoft/phi-4
     output_cols:

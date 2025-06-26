@@ -58,7 +58,7 @@
 
 - block_type: LLMBlock
   block_config:
-    block_name: knowledge generation
+    block_name: knowledge question generation
     config_path: configs/knowledge/generate_questions.yaml
     model_id: mistralai/mixtral-8x7B-instruct-v0.1
     output_cols:
@@ -72,7 +72,7 @@
 
 - block_type: LLMBlock
   block_config:
-    block_name: knowledge generation
+    block_name: knowledge answer generation
     config_path: configs/knowledge/generate_responses.yaml
     model_id: mistralai/mixtral-8x7B-instruct-v0.1
     output_cols:
