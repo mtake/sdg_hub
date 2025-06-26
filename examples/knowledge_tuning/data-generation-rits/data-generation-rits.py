@@ -272,10 +272,12 @@ if use_phi4:
 
 # %%
 if use_phi4:
+    # Load the tokenizer and get the chat template
     # phi4_teacher_model_hf = "microsoft/phi-4"
     # phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
     # _phi4_chat_template = phi4_tokenizer.chat_template
 
+    # Hard code the chat template
     _phi4_chat_template = '''{% for message in messages %}{% if (message['role'] == 'system') %}{{'<|im_start|>system<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>' + message['content'] + '<|im_end|>'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}'''
 
     # Register the chat template
@@ -383,11 +385,13 @@ if use_llama3:
 
 # %%
 if use_llama3:
+    # Load the tokenizer and get the chat template
     # # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
     # llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
     # llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
     # _llama3_chat_template = llama3_tokenizer.chat_template
 
+    # Hard code the chat template
     _llama3_chat_template = '''{{- bos_token }}
 {%- if custom_tools is defined %}
     {%- set tools = custom_tools %}
@@ -604,10 +608,12 @@ if use_mixtral:
 
 # %%
 if use_mixtral:
+    # Load the tokenizer and get the chat template
     # mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     # mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
     # _mixtral_chat_template = mixtral_tokenizer.chat_template
 
+    # Hard code the chat template
     _mixtral_chat_template = '''{%- if messages[0]['role'] == 'system' %}
     {%- set system_message = messages[0]['content'] %}
     {%- set loop_messages = messages[1:] %}
