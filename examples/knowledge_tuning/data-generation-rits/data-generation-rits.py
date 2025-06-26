@@ -34,7 +34,7 @@
 # SDG components: For building our data generation pipeline
 from datasets import load_dataset, Dataset
 from openai import OpenAI
-from transformers import AutoTokenizer
+# from transformers import AutoTokenizer
 
 from sdg_hub.flow import Flow
 from sdg_hub.sdg import SDG
@@ -272,15 +272,16 @@ if use_phi4:
 
 # %%
 if use_phi4:
-    phi4_teacher_model_hf = "microsoft/phi-4"
+    # phi4_teacher_model_hf = "microsoft/phi-4"
+    # phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
+    # _phi4_chat_template = phi4_tokenizer.chat_template
 
-    # Load the tokenizer to get the chat template
-    phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
+    _phi4_chat_template = '''{% for message in messages %}{% if (message['role'] == 'system') %}{{'<|im_start|>system<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'user') %}{{'<|im_start|>user<|im_sep|>' + message['content'] + '<|im_end|>'}}{% elif (message['role'] == 'assistant') %}{{'<|im_start|>assistant<|im_sep|>' + message['content'] + '<|im_end|>'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant<|im_sep|>' }}{% endif %}'''
 
     # Register the chat template
     @PromptRegistry.register(phi4_teacher_model)
     def phi4_chat_template():
-        return phi4_tokenizer.chat_template
+        return _phi4_chat_template
 
 # %% [markdown]
 # ### Configure phi4 Pipeline
@@ -313,9 +314,9 @@ if use_phi4:
     # Generate data and save checkpoints
     generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_phi4")
 
-    generated_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_phi4.jsonl"
-    generated_data_phi4.to_json(generated_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Data saved to {generated_path_phi4}", flush=True)
+    generated_data_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_phi4.jsonl"
+    generated_data_phi4.to_json(generated_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Data saved to {generated_data_path_phi4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_phi4 = to_messages(generated_data_phi4)
@@ -330,12 +331,12 @@ if use_phi4:
 # %%
 if use_phi4:
     # Save comparison results to markdown file
-    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_phi4.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_phi4.md"
 
     if 'generated_data_phi4' not in locals():
         generated_data_phi4 = []
 
-    with open(output_file, "w") as f:
+    with open(model_comparison_path, "w") as f:
         num_generated_data_phi4 = len(generated_data_phi4)
 
         # Number of examples to compare
@@ -353,7 +354,7 @@ if use_phi4:
 
             f.write("\n")
 
-    print(f"Wrote {k} examples to {output_file}", flush=True)
+    print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
 
 # %% [markdown]
 # ## (Optional) SDG with llama3
@@ -382,16 +383,126 @@ if use_llama3:
 
 # %%
 if use_llama3:
-    # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
-    llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
+    # # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
+    # llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
+    # llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
+    # _llama3_chat_template = llama3_tokenizer.chat_template
 
-    # Load the tokenizer to get the chat template
-    llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
+    _llama3_chat_template = '''{{- bos_token }}
+{%- if custom_tools is defined %}
+    {%- set tools = custom_tools %}
+{%- endif %}
+{%- if not tools_in_user_message is defined %}
+    {%- set tools_in_user_message = true %}
+{%- endif %}
+{%- if not date_string is defined %}
+    {%- set date_string = "26 Jul 2024" %}
+{%- endif %}
+{%- if not tools is defined %}
+    {%- set tools = none %}
+{%- endif %}
+
+{#- This block extracts the system message, so we can slot it into the right place. #}
+{%- if messages[0]['role'] == 'system' %}
+    {%- set system_message = messages[0]['content']|trim %}
+    {%- set messages = messages[1:] %}
+{%- else %}
+    {%- set system_message = "" %}
+{%- endif %}
+
+{#- System message + builtin tools #}
+{{- "<|start_header_id|>system<|end_header_id|>\n\n" }}
+{%- if builtin_tools is defined or tools is not none %}
+    {{- "Environment: ipython\n" }}
+{%- endif %}
+{%- if builtin_tools is defined %}
+    {{- "Tools: " + builtin_tools | reject('equalto', 'code_interpreter') | join(", ") + "\n\n"}}
+{%- endif %}
+{{- "Cutting Knowledge Date: December 2023\n" }}
+{{- "Today Date: " + date_string + "\n\n" }}
+{%- if tools is not none and not tools_in_user_message %}
+    {{- "You have access to the following functions. To call a function, please respond with JSON for a function call." }}
+    {{- 'Respond in the format {"name": function name, "parameters": dictionary of argument name and its value}.' }}
+    {{- "Do not use variables.\n\n" }}
+    {%- for t in tools %}
+        {{- t | tojson(indent=4) }}
+        {{- "\n\n" }}
+    {%- endfor %}
+{%- endif %}
+{{- system_message }}
+{{- "<|eot_id|>" }}
+
+{#- Custom tools are passed in a user message with some extra guidance #}
+{%- if tools_in_user_message and not tools is none %}
+    {#- Extract the first user message so we can plug it in here #}
+    {%- if messages | length != 0 %}
+        {%- set first_user_message = messages[0]['content']|trim %}
+        {%- set messages = messages[1:] %}
+    {%- else %}
+        {{- raise_exception("Cannot put tools in the first user message when there's no first user message!") }}
+{%- endif %}
+    {{- '<|start_header_id|>user<|end_header_id|>\n\n' -}}
+    {{- "Given the following functions, please respond with a JSON for a function call " }}
+    {{- "with its proper arguments that best answers the given prompt.\n\n" }}
+    {{- 'Respond in the format {"name": function name, "parameters": dictionary of argument name and its value}.' }}
+    {{- "Do not use variables.\n\n" }}
+    {%- for t in tools %}
+        {{- t | tojson(indent=4) }}
+        {{- "\n\n" }}
+    {%- endfor %}
+    {{- first_user_message + "<|eot_id|>"}}
+{%- endif %}
+
+{%- for message in messages %}
+    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}
+        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' }}
+    {%- elif 'tool_calls' in message %}
+        {%- if not message.tool_calls|length == 1 %}
+            {{- raise_exception("This model only supports single tool-calls at once!") }}
+        {%- endif %}
+        {%- set tool_call = message.tool_calls[0].function %}
+        {%- if builtin_tools is defined and tool_call.name in builtin_tools %}
+            {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' -}}
+            {{- "<|python_tag|>" + tool_call.name + ".call(" }}
+            {%- for arg_name, arg_val in tool_call.arguments | items %}
+                {{- arg_name + '="' + arg_val + '"' }}
+                {%- if not loop.last %}
+                    {{- ", " }}
+                {%- endif %}
+                {%- endfor %}
+            {{- ")" }}
+        {%- else  %}
+            {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' -}}
+            {{- '{"name": "' + tool_call.name + '", ' }}
+            {{- '"parameters": ' }}
+            {{- tool_call.arguments | tojson }}
+            {{- "}" }}
+        {%- endif %}
+        {%- if builtin_tools is defined %}
+            {#- This means we're in ipython mode #}
+            {{- "<|eom_id|>" }}
+        {%- else %}
+            {{- "<|eot_id|>" }}
+        {%- endif %}
+    {%- elif message.role == "tool" or message.role == "ipython" %}
+        {{- "<|start_header_id|>ipython<|end_header_id|>\n\n" }}
+        {%- if message.content is mapping or message.content is iterable %}
+            {{- message.content | tojson }}
+        {%- else %}
+            {{- message.content }}
+        {%- endif %}
+        {{- "<|eot_id|>" }}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|start_header_id|>assistant<|end_header_id|>\n\n' }}
+{%- endif %}
+'''
 
     # Register the chat template
     @PromptRegistry.register(llama3_teacher_model)
     def llama3_chat_template():
-        return llama3_tokenizer.chat_template
+        return _llama3_chat_template
 
 # %% [markdown]
 # ### Configure llama3 Pipeline
@@ -424,9 +535,9 @@ if use_llama3:
     # Generate data and save checkpoints
     generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama3")
 
-    generated_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_llama3.jsonl"
-    generated_data_llama3.to_json(generated_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Data saved to {generated_path_llama3}", flush=True)
+    generated_data_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_llama3.jsonl"
+    generated_data_llama3.to_json(generated_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Data saved to {generated_data_path_llama3}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama3 = to_messages(generated_data_llama3)
@@ -441,12 +552,12 @@ if use_llama3:
 # %%
 if use_llama3:
     # Save comparison results to markdown file
-    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_llama3.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_llama3.md"
 
     if 'generated_data_llama3' not in locals():
         generated_data_llama3 = []
 
-    with open(output_file, "w") as f:
+    with open(model_comparison_path, "w") as f:
         num_generated_data_llama3 = len(generated_data_llama3)
 
         # Number of examples to compare
@@ -464,7 +575,7 @@ if use_llama3:
 
             f.write("\n")
 
-    print(f"Wrote {k} examples to {output_file}", flush=True)
+    print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
 
 # %% [markdown]
 # ## (Optional) SDG with mixtral
@@ -493,15 +604,40 @@ if use_mixtral:
 
 # %%
 if use_mixtral:
-    mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    # mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    # mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
+    # _mixtral_chat_template = mixtral_tokenizer.chat_template
 
-    # Load the tokenizer to get the chat template
-    mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
+    _mixtral_chat_template = '''{%- if messages[0]['role'] == 'system' %}
+    {%- set system_message = messages[0]['content'] %}
+    {%- set loop_messages = messages[1:] %}
+{%- else %}
+    {%- set loop_messages = messages %}
+{%- endif %}
+
+{{- bos_token }}
+{%- for message in loop_messages %}
+    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}
+        {{- raise_exception('After the optional system message, conversation roles must alternate user/assistant/user/assistant/...') }}
+    {%- endif %}
+    {%- if message['role'] == 'user' %}
+        {%- if loop.first and system_message is defined %}
+            {{- ' [INST] ' + system_message + '\n\n' + message['content'] + ' [/INST]' }}
+        {%- else %}
+            {{- ' [INST] ' + message['content'] + ' [/INST]' }}
+        {%- endif %}
+    {%- elif message['role'] == 'assistant' %}
+        {{- ' ' + message['content'] + eos_token}}
+    {%- else %}
+        {{- raise_exception('Only user and assistant roles are supported, with the exception of an initial optional system message!') }}
+    {%- endif %}
+{%- endfor %}
+'''
 
     # Register the chat template
     @PromptRegistry.register(mixtral_teacher_model)
     def mixtral_chat_template():
-        return mixtral_tokenizer.chat_template
+        return _mixtral_chat_template
 
 # %% [markdown]
 # ### Configure mixtral Pipeline
@@ -534,9 +670,9 @@ if use_mixtral:
     # Generate data and save checkpoints
     generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_mixtral")
 
-    generated_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_mixtral.jsonl"
-    generated_data_mixtral.to_json(generated_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
-    print(f"Data saved to {generated_path_mixtral}", flush=True)
+    generated_data_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_mixtral.jsonl"
+    generated_data_mixtral.to_json(generated_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Data saved to {generated_data_path_mixtral}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_mixtral = to_messages(generated_data_mixtral)
@@ -551,12 +687,12 @@ if use_mixtral:
 # %%
 if use_mixtral:
     # Save comparison results to markdown file
-    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}_mixtral.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_mixtral.md"
 
     if 'generated_data_mixtral' not in locals():
         generated_data_mixtral = []
 
-    with open(output_file, "w") as f:
+    with open(model_comparison_path, "w") as f:
         num_generated_data_mixtral = len(generated_data_mixtral)
 
         # Number of examples to compare
@@ -574,7 +710,7 @@ if use_mixtral:
 
             f.write("\n")
 
-    print(f"Wrote {k} examples to {output_file}", flush=True)
+    print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
 
 # %% [markdown]
 # ## (Optional) Compare Generated Data
@@ -601,9 +737,9 @@ else:
 
 if used_models > 1:
     # Save comparison results to markdown file
-    output_file = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
 
-    with open(output_file, "w") as f:
+    with open(model_comparison_path, "w") as f:
         num_generated_data_phi4 = len(generated_data_phi4)
         num_generated_data_llama3 = len(generated_data_llama3)
         num_generated_data_mixtral = len(generated_data_mixtral)
@@ -635,7 +771,7 @@ if used_models > 1:
 
             f.write("\n")
 
-    print(f"Wrote {k} examples to {output_file}", flush=True)
+    print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
 
 # %% [markdown]
 # ## Production Usage
