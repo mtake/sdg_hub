@@ -1,7 +1,7 @@
 # %% [markdown]
-# # Synthetic Data Generation Tutorial using phi4, llama3, and mixtral
+# # Synthetic Data Generation Tutorial using phi4, llama3, llama4, and mixtral
 # 
-# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from documents using large language models like phi4. We will also generate data using llama3 and mixtral models for comparison. We'll cover:
+# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from documents using large language models like phi4. We will also generate data using llama3, llama4, and mixtral models for comparison. We'll cover:
 # 
 # 1. Setting up the environment
 # 2. Connecting to LLM servers
@@ -34,7 +34,7 @@
 # SDG components: For building our data generation pipeline
 from datasets import load_dataset, Dataset
 from openai import OpenAI
-# from transformers import AutoTokenizer
+from transformers import AutoTokenizer
 
 from sdg_hub.flow import Flow
 from sdg_hub.sdg import SDG
@@ -77,10 +77,12 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # %%
 phi4_teacher_model = "microsoft/phi-4"
 llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
+llama4_teacher_model = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
 mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
 
 use_phi4 = True
 use_llama3 = False
+use_llama4 = False
 use_mixtral = False
 
 # %% [markdown]
@@ -103,6 +105,7 @@ model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
 # NOTE avoid clashes in model_name
 model_dict[phi4_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
 model_dict[llama3_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+model_dict[llama4_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
 model_dict[mixtral_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 
 def get_base_url(model_name: str)-> str:
@@ -477,6 +480,116 @@ if use_llama3:
     print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
 
 # %% [markdown]
+# ## (Optional) SDG with llama4
+
+# %% [markdown]
+# ### Setting up llama4 Model
+
+# %%
+if use_llama4:
+    # Configure OpenAI client
+    llama4_base_url = get_base_url(llama4_teacher_model)
+
+    llama4_client = OpenAI(
+        api_key="EMPTY",
+        base_url=llama4_base_url,
+        default_headers=default_headers,
+    )
+
+    print(f"Connected to model: {llama4_teacher_model}", flush=True)
+
+# %% [markdown]
+# ### Configure llama4 Prompt Template
+# 
+# We need to register the correct chat template for our model to ensure proper prompt formatting.
+
+# %%
+if use_llama4 and llama4_teacher_model not in PromptRegistry.get_registry():
+    # Load the tokenizer and get the chat template
+    # llama4_teacher_model_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    llama4_teacher_model_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    llama4_tokenizer = AutoTokenizer.from_pretrained(llama4_teacher_model_hf)
+    _llama4_chat_template = llama4_tokenizer.chat_template
+
+    # Register the chat template
+    @PromptRegistry.register(llama4_teacher_model)
+    def llama4_chat_template():
+        return _llama4_chat_template
+
+# %% [markdown]
+# ### Configure llama4 Pipeline
+# 
+# Now we'll set up our Synthetic Data Generation (SDG) pipeline with the following components:
+# 1. SDG Flow configuration from YAML
+# 2. SDG Pipeline setup
+# 3. SDG configuration with batch processing, number of workers, and save frequency parameters
+
+# %%
+if use_llama4:
+    # Load the flow configuration from YAML file
+    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{data_lang}_llama4_rits.yaml")
+
+    # Initialize the SDG pipeline with processing parameters
+    sdg_llama4 = SDG(
+        [flow_llama4],
+        num_workers=num_workers,
+        batch_size=batch_size,
+        save_freq=save_freq,
+    )
+
+# %% [markdown]
+# ### Generate Data with llama4
+# 
+# Now we'll use our configured pipeline to generate synthetic question-answer pairs.
+
+# %%
+if use_llama4:
+    # Generate data and save checkpoints
+    generated_data_llama4 = sdg_llama4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama4")
+
+    generated_data_path_llama4 = f"generated_data_{data_name_duplicate}_{timestamp}_llama4.jsonl"
+    generated_data_llama4.to_json(generated_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Data saved to {generated_data_path_llama4}", flush=True)
+
+    # Save generated data in messages format for training
+    messages_data_llama4 = to_messages(generated_data_llama4)
+
+    messages_data_path_llama4 = f"messages_data_{data_name_duplicate}_{timestamp}_llama4.jsonl"
+    messages_data_llama4.to_json(messages_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
+    print(f"Messages data saved to {messages_data_path_llama4}", flush=True)
+
+# %% [markdown]
+# ### Compare Generated Data with llama4
+
+# %%
+if use_llama4:
+    # Save comparison results to markdown file
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_llama4.md"
+
+    if 'generated_data_llama4' not in locals():
+        generated_data_llama4 = []
+
+    with open(model_comparison_path, "w") as f:
+        num_generated_data_llama4 = len(generated_data_llama4)
+
+        # Number of examples to compare
+        k = num_generated_data_llama4
+
+        # Compare generated Q&A pairs
+        for i in range(k):
+            f.write(f"# Example #{i+1}\n\n")
+
+            if i < num_generated_data_llama4:
+                # llama4 results
+                generated_data_i = generated_data_llama4[i]
+                model_name = "llama4"
+                print_generated_data(f, generated_data_i, model_name)
+
+            f.write("\n")
+
+    print(f"Wrote {k} examples to {model_comparison_path}", flush=True)
+
+# %% [markdown]
 # ## (Optional) SDG with mixtral
 
 # %% [markdown]
@@ -607,6 +720,11 @@ if 'generated_data_llama3' not in locals():
 else:
     used_models += 1
 
+if 'generated_data_llama4' not in locals():
+    generated_data_llama4 = []
+else:
+    used_models += 1
+
 if 'generated_data_mixtral' not in locals():
     generated_data_mixtral = []
 else:
@@ -619,10 +737,11 @@ if used_models > 1:
     with open(model_comparison_path, "w") as f:
         num_generated_data_phi4 = len(generated_data_phi4)
         num_generated_data_llama3 = len(generated_data_llama3)
+        num_generated_data_llama4 = len(generated_data_llama4)
         num_generated_data_mixtral = len(generated_data_mixtral)
 
         # Number of examples to compare
-        k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_mixtral)
+        k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_llama4, num_generated_data_mixtral)
 
         # Compare generated Q&A pairs
         for i in range(k):
@@ -638,6 +757,12 @@ if used_models > 1:
                 # llama3 results
                 generated_data_i = generated_data_llama3[i]
                 model_name = "llama3"
+                print_generated_data(f, generated_data_i, model_name)
+
+            if i < num_generated_data_llama4:
+                # llama4 results
+                generated_data_i = generated_data_llama4[i]
+                model_name = "llama4"
                 print_generated_data(f, generated_data_i, model_name)
 
             if i < num_generated_data_mixtral:
