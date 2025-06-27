@@ -105,7 +105,9 @@ use_mixtral = False
 # %% [markdown]
 # ### Configure Model Server
 # 
-# [RITS](https://rits.fmaas.res.ibm.com/) is a model server for researchers at IBM.
+# [RITS](https://rits.fmaas.res.ibm.com/) is an internal model server.
+# 
+# This notebook still works without RITS by hosting the model using vLLM.
 
 # %%
 use_rits = True
