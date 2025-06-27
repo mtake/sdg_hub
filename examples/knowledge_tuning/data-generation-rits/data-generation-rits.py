@@ -15,7 +15,7 @@
 # %autoreload 2
 
 # %% [markdown]
-# ## Configurations
+# ## Setup Instructions
 # 
 # Before running this notebook, you'll need to:
 # 
@@ -41,9 +41,9 @@ from sdg_hub.sdg import SDG
 from sdg_hub.registry import PromptRegistry
 
 # %%
-import datetime
+from datetime import datetime
 
-now = datetime.datetime.now()
+now = datetime.now()
 timestamp = now.strftime('%Y%m%d-%H%M%S')
 
 # %%
