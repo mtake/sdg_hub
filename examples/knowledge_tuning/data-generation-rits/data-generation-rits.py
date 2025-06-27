@@ -75,11 +75,17 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # ### Configure Models
 
 # %%
-phi4_teacher_model = "microsoft/phi-4"
-llama3_teacher_model = "meta-llama/llama-3-3-70b-instruct"
-llama4_teacher_model = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-mixtral_teacher_model = "mistralai/mixtral-8x7B-instruct-v0.1"
+phi4_model_name = "microsoft/phi-4"
+llama3_model_name = "meta-llama/llama-3-3-70b-instruct"
+llama4_model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+mixtral_model_name = "mistralai/mixtral-8x7B-instruct-v0.1"
 
+phi4_short_name = "phi4"
+llama3_short_name = "llama3"
+llama4_short_name = "llama4"
+mixtral_short_name = "mixtral"
+
+# %%
 use_phi4 = True
 use_llama3 = False
 use_llama4 = False
@@ -93,8 +99,6 @@ import os
 import requests
 
 RITS_API_KEY = os.getenv("RITS_API_KEY")
-# print(f"RITS_API_KEY={RITS_API_KEY}", flush=True)
-
 default_headers = {"RITS_API_KEY": RITS_API_KEY}
 
 url = "https://rits.fmaas.res.ibm.com/ritsapi/inferenceinfo"
@@ -103,10 +107,10 @@ assert res.status_code == 200
 model_list: list[dict[str, str]] = res.json()
 model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
 # NOTE avoid clashes in model_name
-model_dict[phi4_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-model_dict[llama3_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
-model_dict[llama4_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
-model_dict[mixtral_teacher_model] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
+model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
+model_dict[mixtral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 
 def get_base_url(model_name: str)-> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
@@ -133,8 +137,8 @@ seed_data_name = f"seed_data_{data_name}"
 seed_data_path = f"{seed_data_name}.jsonl"
 
 # %%
-# duplicate_times = 1
-duplicate_times = 5
+duplicate_times = 1
+# duplicate_times = 5
 
 data_name_duplicate = f"{data_name}-d{duplicate_times}" if duplicate_times > 1 else data_name
 
@@ -243,13 +247,13 @@ def print_seed_data(f, generated_data_i) -> None:
         f.write(f"### raw_document (not used for Q&A generation)\n")
         f.write(raw_document + "\n\n")
 
-def print_generated_data(f, generated_data_i, model_name: str) -> None:
+def print_generated_data(f, generated_data_i, short_name: str) -> None:
     print_seed_data(f, generated_data_i)
-    f.write(f"### document{document_type(generated_data_i)} from {model_name}\n")
+    f.write(f"### document{document_type(generated_data_i)} from {short_name}\n")
     f.write(generated_data_i['document'] + "\n\n")
-    f.write(f"### question from {model_name}\n")
+    f.write(f"### question from {short_name}\n")
     f.write(generated_data_i['question'] + "\n\n")
-    f.write(f"### response from {model_name}\n")
+    f.write(f"### response from {short_name}\n")
     f.write(generated_data_i['response'] + "\n\n")
 
 # %% [markdown]
@@ -261,7 +265,7 @@ def print_generated_data(f, generated_data_i, model_name: str) -> None:
 # %%
 if use_phi4:
     # Configure OpenAI client
-    phi4_base_url = get_base_url(phi4_teacher_model)
+    phi4_base_url = get_base_url(phi4_model_name)
 
     phi4_client = OpenAI(
         api_key="EMPTY",
@@ -269,7 +273,7 @@ if use_phi4:
         default_headers=default_headers,
     )
 
-    print(f"Connected to model: {phi4_teacher_model}", flush=True)
+    print(f"Connected to model: {phi4_model_name}", flush=True)
 
 # %% [markdown]
 # ### Configure phi4 Prompt Template
@@ -277,10 +281,10 @@ if use_phi4:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if use_phi4 and phi4_teacher_model not in PromptRegistry.get_registry():
+if use_phi4 and phi4_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # phi4_teacher_model_hf = "microsoft/phi-4"
-    # phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_teacher_model_hf)
+    # phi4_model_name_hf = "microsoft/phi-4"
+    # phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_model_name_hf)
     # _phi4_chat_template = phi4_tokenizer.chat_template
 
     # Copy the chat template
@@ -288,7 +292,7 @@ if use_phi4 and phi4_teacher_model not in PromptRegistry.get_registry():
     _phi4_chat_template = microsoft_phi_chat_template()
 
     # Register the chat template
-    @PromptRegistry.register(phi4_teacher_model)
+    @PromptRegistry.register(phi4_model_name)
     def phi4_chat_template():
         return _phi4_chat_template
 
@@ -303,7 +307,7 @@ if use_phi4 and phi4_teacher_model not in PromptRegistry.get_registry():
 # %%
 if use_phi4:
     # Load the flow configuration from YAML file
-    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_phi4_rits.yaml")
+    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_{phi4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_phi4 = SDG(
@@ -321,16 +325,16 @@ if use_phi4:
 # %%
 if use_phi4:
     # Generate data and save checkpoints
-    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_phi4")
+    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{phi4_short_name}")
 
-    generated_data_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_phi4.jsonl"
+    generated_data_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
     generated_data_phi4.to_json(generated_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_phi4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_phi4 = to_messages(generated_data_phi4)
 
-    messages_data_path_phi4 = f"messages_data_{data_name_duplicate}_{timestamp}_phi4.jsonl"
+    messages_data_path_phi4 = f"messages_data_{data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
     messages_data_phi4.to_json(messages_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
@@ -340,7 +344,7 @@ if use_phi4:
 # %%
 if use_phi4:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_phi4.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{phi4_short_name}.md"
 
     if 'generated_data_phi4' not in locals():
         generated_data_phi4 = []
@@ -358,8 +362,8 @@ if use_phi4:
             if i < num_generated_data_phi4:
                 # phi4 results
                 generated_data_i = generated_data_phi4[i]
-                model_name = "phi4"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = phi4_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             f.write("\n")
 
@@ -374,7 +378,7 @@ if use_phi4:
 # %%
 if use_llama3:
     # Configure OpenAI client
-    llama3_base_url = get_base_url(llama3_teacher_model)
+    llama3_base_url = get_base_url(llama3_model_name)
 
     llama3_client = OpenAI(
         api_key="EMPTY",
@@ -382,7 +386,7 @@ if use_llama3:
         default_headers=default_headers,
     )
 
-    print(f"Connected to model: {llama3_teacher_model}", flush=True)
+    print(f"Connected to model: {llama3_model_name}", flush=True)
 
 # %% [markdown]
 # ### Configure llama3 Prompt Template
@@ -390,11 +394,11 @@ if use_llama3:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if use_llama3 and llama3_teacher_model not in PromptRegistry.get_registry():
+if use_llama3 and llama3_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # # llama3_teacher_model_hf = "meta-llama/Llama-3.3-70B-Instruct"
-    # llama3_teacher_model_hf = "unsloth/Llama-3.3-70B-Instruct"
-    # llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_teacher_model_hf)
+    # # llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
+    # llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
+    # llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_model_name_hf)
     # _llama3_chat_template = llama3_tokenizer.chat_template
 
     # Copy the chat template
@@ -402,7 +406,7 @@ if use_llama3 and llama3_teacher_model not in PromptRegistry.get_registry():
     _llama3_chat_template = meta_llama_chat_template()
 
     # Register the chat template
-    @PromptRegistry.register(llama3_teacher_model)
+    @PromptRegistry.register(llama3_model_name)
     def llama3_chat_template():
         return _llama3_chat_template
 
@@ -417,7 +421,7 @@ if use_llama3 and llama3_teacher_model not in PromptRegistry.get_registry():
 # %%
 if use_llama3:
     # Load the flow configuration from YAML file
-    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{data_lang}_llama3_rits.yaml")
+    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{data_lang}_{llama3_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
@@ -435,16 +439,16 @@ if use_llama3:
 # %%
 if use_llama3:
     # Generate data and save checkpoints
-    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama3")
+    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{llama3_short_name}")
 
-    generated_data_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_llama3.jsonl"
+    generated_data_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
     generated_data_llama3.to_json(generated_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_llama3}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama3 = to_messages(generated_data_llama3)
 
-    messages_data_path_llama3 = f"messages_data_{data_name_duplicate}_{timestamp}_llama3.jsonl"
+    messages_data_path_llama3 = f"messages_data_{data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
     messages_data_llama3.to_json(messages_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
@@ -454,7 +458,7 @@ if use_llama3:
 # %%
 if use_llama3:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_llama3.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama3_short_name}.md"
 
     if 'generated_data_llama3' not in locals():
         generated_data_llama3 = []
@@ -472,8 +476,8 @@ if use_llama3:
             if i < num_generated_data_llama3:
                 # llama3 results
                 generated_data_i = generated_data_llama3[i]
-                model_name = "llama3"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = llama3_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             f.write("\n")
 
@@ -488,7 +492,7 @@ if use_llama3:
 # %%
 if use_llama4:
     # Configure OpenAI client
-    llama4_base_url = get_base_url(llama4_teacher_model)
+    llama4_base_url = get_base_url(llama4_model_name)
 
     llama4_client = OpenAI(
         api_key="EMPTY",
@@ -496,7 +500,7 @@ if use_llama4:
         default_headers=default_headers,
     )
 
-    print(f"Connected to model: {llama4_teacher_model}", flush=True)
+    print(f"Connected to model: {llama4_model_name}", flush=True)
 
 # %% [markdown]
 # ### Configure llama4 Prompt Template
@@ -504,15 +508,15 @@ if use_llama4:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if use_llama4 and llama4_teacher_model not in PromptRegistry.get_registry():
+if use_llama4 and llama4_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # llama4_teacher_model_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
-    llama4_teacher_model_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
-    llama4_tokenizer = AutoTokenizer.from_pretrained(llama4_teacher_model_hf)
+    # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    llama4_tokenizer = AutoTokenizer.from_pretrained(llama4_model_name_hf)
     _llama4_chat_template = llama4_tokenizer.chat_template
 
     # Register the chat template
-    @PromptRegistry.register(llama4_teacher_model)
+    @PromptRegistry.register(llama4_model_name)
     def llama4_chat_template():
         return _llama4_chat_template
 
@@ -527,7 +531,7 @@ if use_llama4 and llama4_teacher_model not in PromptRegistry.get_registry():
 # %%
 if use_llama4:
     # Load the flow configuration from YAML file
-    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{data_lang}_llama4_rits.yaml")
+    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{data_lang}_{llama4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama4 = SDG(
@@ -545,16 +549,16 @@ if use_llama4:
 # %%
 if use_llama4:
     # Generate data and save checkpoints
-    generated_data_llama4 = sdg_llama4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_llama4")
+    generated_data_llama4 = sdg_llama4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{llama4_short_name}")
 
-    generated_data_path_llama4 = f"generated_data_{data_name_duplicate}_{timestamp}_llama4.jsonl"
+    generated_data_path_llama4 = f"generated_data_{data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
     generated_data_llama4.to_json(generated_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_llama4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama4 = to_messages(generated_data_llama4)
 
-    messages_data_path_llama4 = f"messages_data_{data_name_duplicate}_{timestamp}_llama4.jsonl"
+    messages_data_path_llama4 = f"messages_data_{data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
     messages_data_llama4.to_json(messages_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_llama4}", flush=True)
 
@@ -564,7 +568,7 @@ if use_llama4:
 # %%
 if use_llama4:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_llama4.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama4_short_name}.md"
 
     if 'generated_data_llama4' not in locals():
         generated_data_llama4 = []
@@ -582,8 +586,8 @@ if use_llama4:
             if i < num_generated_data_llama4:
                 # llama4 results
                 generated_data_i = generated_data_llama4[i]
-                model_name = "llama4"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = llama4_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             f.write("\n")
 
@@ -598,7 +602,7 @@ if use_llama4:
 # %%
 if use_mixtral:
     # Configure OpenAI client
-    mixtral_base_url = get_base_url(mixtral_teacher_model)
+    mixtral_base_url = get_base_url(mixtral_model_name)
 
     mixtral_client = OpenAI(
         api_key="EMPTY",
@@ -606,7 +610,7 @@ if use_mixtral:
         default_headers=default_headers,
     )
 
-    print(f"Connected to model: {mixtral_teacher_model}", flush=True)
+    print(f"Connected to model: {mixtral_model_name}", flush=True)
 
 # %% [markdown]
 # ### Configure mixtral Prompt Template
@@ -614,10 +618,10 @@ if use_mixtral:
 # We need to register the correct chat template for our model to ensure proper prompt formatting.
 
 # %%
-if use_mixtral and mixtral_teacher_model not in PromptRegistry.get_registry():
+if use_mixtral and mixtral_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # mixtral_teacher_model_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
-    # mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_teacher_model_hf)
+    # mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    # mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_model_name_hf)
     # _mixtral_chat_template = mixtral_tokenizer.chat_template
 
     # Copy the chat template
@@ -625,7 +629,7 @@ if use_mixtral and mixtral_teacher_model not in PromptRegistry.get_registry():
     _mixtral_chat_template = mistral_chat_template()
 
     # Register the chat template
-    @PromptRegistry.register(mixtral_teacher_model)
+    @PromptRegistry.register(mixtral_model_name)
     def mixtral_chat_template():
         return _mixtral_chat_template
 
@@ -640,7 +644,7 @@ if use_mixtral and mixtral_teacher_model not in PromptRegistry.get_registry():
 # %%
 if use_mixtral:
     # Load the flow configuration from YAML file
-    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_mixtral_rits.yaml")
+    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_{mixtral_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_mixtral = SDG(
@@ -658,16 +662,16 @@ if use_mixtral:
 # %%
 if use_mixtral:
     # Generate data and save checkpoints
-    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_mixtral")
+    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{mixtral_short_name}")
 
-    generated_data_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_mixtral.jsonl"
+    generated_data_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
     generated_data_mixtral.to_json(generated_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_mixtral}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_mixtral = to_messages(generated_data_mixtral)
 
-    messages_data_path_mixtral = f"messages_data_{data_name_duplicate}_{timestamp}_mixtral.jsonl"
+    messages_data_path_mixtral = f"messages_data_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
     messages_data_mixtral.to_json(messages_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
@@ -677,7 +681,7 @@ if use_mixtral:
 # %%
 if use_mixtral:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_mixtral.md"
+    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.md"
 
     if 'generated_data_mixtral' not in locals():
         generated_data_mixtral = []
@@ -695,8 +699,8 @@ if use_mixtral:
             if i < num_generated_data_mixtral:
                 # mixtral results
                 generated_data_i = generated_data_mixtral[i]
-                model_name = "mixtral"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = mixtral_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             f.write("\n")
 
@@ -750,26 +754,26 @@ if used_models > 1:
             if i < num_generated_data_phi4:
                 # phi4 results
                 generated_data_i = generated_data_phi4[i]
-                model_name = "phi4"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = phi4_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             if i < num_generated_data_llama3:
                 # llama3 results
                 generated_data_i = generated_data_llama3[i]
-                model_name = "llama3"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = llama3_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             if i < num_generated_data_llama4:
                 # llama4 results
                 generated_data_i = generated_data_llama4[i]
-                model_name = "llama4"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = llama4_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             if i < num_generated_data_mixtral:
                 # mixtral results
                 generated_data_i = generated_data_mixtral[i]
-                model_name = "mixtral"
-                print_generated_data(f, generated_data_i, model_name)
+                short_name = mixtral_short_name
+                print_generated_data(f, generated_data_i, short_name)
 
             f.write("\n")
 
