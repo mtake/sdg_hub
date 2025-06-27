@@ -46,9 +46,11 @@ from datetime import datetime
 now = datetime.now()
 timestamp = now.strftime('%Y%m%d-%H%M%S')
 
+# %% [markdown]
+# ### Configure Output
+
 # %%
-force_ascii = True  # NOTE this is default
-# force_ascii = False
+force_ascii = True
 
 # %% [markdown]
 # ### Configure Flow
@@ -75,10 +77,19 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # ### Configure Models
 
 # %%
+# Served model name
 phi4_model_name = "microsoft/phi-4"
 llama3_model_name = "meta-llama/llama-3-3-70b-instruct"
 llama4_model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
 mixtral_model_name = "mistralai/mixtral-8x7B-instruct-v0.1"
+
+# HuggingFace model name
+phi4_model_name_hf = "microsoft/phi-4"
+# llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
+llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
+# llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
+mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 phi4_short_name = "phi4"
 llama3_short_name = "llama3"
@@ -92,25 +103,34 @@ use_llama4 = False
 use_mixtral = False
 
 # %% [markdown]
-# ### Configure [RITS](https://rits.fmaas.res.ibm.com/) Inference Server
+# ### Configure Model Server
+# 
+# [RITS](https://rits.fmaas.res.ibm.com/) is a model server for researchers at IBM.
+
+# %%
+use_rits = True
 
 # %%
 import os
 import requests
 
-RITS_API_KEY = os.getenv("RITS_API_KEY")
-default_headers = {"RITS_API_KEY": RITS_API_KEY}
+if use_rits:
+    RITS_API_KEY = os.getenv("RITS_API_KEY")
+    default_headers = {"RITS_API_KEY": RITS_API_KEY}
 
-url = "https://rits.fmaas.res.ibm.com/ritsapi/inferenceinfo"
-res = requests.get(url=url, headers=default_headers)
-assert res.status_code == 200
-model_list: list[dict[str, str]] = res.json()
-model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
-# NOTE avoid clashes in model_name
-model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
-model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
-model_dict[mixtral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
+    url = "https://rits.fmaas.res.ibm.com/ritsapi/inferenceinfo"
+    res = requests.get(url=url, headers=default_headers)
+    assert res.status_code == 200
+    model_list: list[dict[str, str]] = res.json()
+    model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
+    # avoid crashes in model_name
+    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+    model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+    model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
+    model_dict[mixtral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
+else:
+    default_headers: dict[str, str] = {}
+    model_dict: dict[str, str] = {}
 
 def get_base_url(model_name: str)-> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
@@ -261,6 +281,13 @@ def print_generated_data(f, generated_data_i, short_name: str) -> None:
 
 # %% [markdown]
 # ### Setting up phi4 Model
+# 
+# Unless `use_rits` is True and the model is hosted on RITS, we need to host the model using vLLM.
+# 
+# Start the vLLM server (run in terminal):
+# ```bash
+# vllm serve ${phi4_model_name_hf} --served-model-name ${phi4_model_name}
+# ```
 
 # %%
 if use_phi4:
@@ -283,7 +310,6 @@ if use_phi4:
 # %%
 if use_phi4 and phi4_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # phi4_model_name_hf = "microsoft/phi-4"
     # phi4_tokenizer = AutoTokenizer.from_pretrained(phi4_model_name_hf)
     # _phi4_chat_template = phi4_tokenizer.chat_template
 
@@ -374,6 +400,13 @@ if use_phi4:
 
 # %% [markdown]
 # ### Setting up llama3 Model
+# 
+# Unless `use_rits` is True and the model is hosted on RITS, we need to host the model using vLLM.
+# 
+# Start the vLLM server (run in terminal):
+# ```bash
+# vllm serve ${llama3_model_name_hf} --served-model-name ${llama3_model_name} --tensor-parallel-size 8
+# ```
 
 # %%
 if use_llama3:
@@ -396,8 +429,6 @@ if use_llama3:
 # %%
 if use_llama3 and llama3_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # # llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
-    # llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
     # llama3_tokenizer = AutoTokenizer.from_pretrained(llama3_model_name_hf)
     # _llama3_chat_template = llama3_tokenizer.chat_template
 
@@ -488,6 +519,13 @@ if use_llama3:
 
 # %% [markdown]
 # ### Setting up llama4 Model
+# 
+# Unless `use_rits` is True and the model is hosted on RITS, we need to host the model using vLLM.
+# 
+# Start the vLLM server (run in terminal):
+# ```bash
+# vllm serve ${llama4_model_name_hf} --served-model-name ${llama4_model_name} --tensor-parallel-size 8
+# ```
 
 # %%
 if use_llama4:
@@ -510,8 +548,6 @@ if use_llama4:
 # %%
 if use_llama4 and llama4_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
-    llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
     llama4_tokenizer = AutoTokenizer.from_pretrained(llama4_model_name_hf)
     _llama4_chat_template = llama4_tokenizer.chat_template
 
@@ -598,6 +634,13 @@ if use_llama4:
 
 # %% [markdown]
 # ### Setting up mixtral Model
+# 
+# Unless `use_rits` is True and the model is hosted on RITS, we need to host the model using vLLM.
+# 
+# Start the vLLM server (run in terminal):
+# ```bash
+# vllm serve ${mixtral_model_name_hf} --served-model-name ${mixtral_model_name} --tensor-parallel-size 8
+# ```
 
 # %%
 if use_mixtral:
@@ -620,7 +663,6 @@ if use_mixtral:
 # %%
 if use_mixtral and mixtral_model_name not in PromptRegistry.get_registry():
     # Load the tokenizer and get the chat template
-    # mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     # mixtral_tokenizer = AutoTokenizer.from_pretrained(mixtral_model_name_hf)
     # _mixtral_chat_template = mixtral_tokenizer.chat_template
 
