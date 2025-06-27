@@ -19,7 +19,7 @@
 # 
 # Before running this notebook, you'll need to:
 # 
-# ```bash 
+# ```bash
 # pip install sdg-hub==0.1.0a4
 # ```
 
@@ -150,7 +150,9 @@ def get_base_url(model_name: str)-> str:
 # data_name = "teigaku-genzei-ibm-v3"
 data_name = "teigaku-genzei-ibm-v4"
 
-if "20250411_ja" in data_name or "teigaku-genzei" in data_name:
+if data_name.endswith(("_ja", "-ja")):
+    data_lang = "_ja"
+elif data_name.startswith("teigaku-genzei"):
     data_lang = "_ja"
 else:
     data_lang = ""
