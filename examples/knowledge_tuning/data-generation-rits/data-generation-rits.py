@@ -823,18 +823,8 @@ if used_models > 1:
 
 # %% [markdown]
 # ## Production Usage
+# For large-scale data generation, export this notebook to a python script and execute it.
 # 
-# For large-scale data generation, use the command-line script instead of this notebook:
-# 
-# ```bash
-# python scripts/generate.py --ds_path seed_data.jsonl \
-#     --bs 2 --num_workers 10 \
-#     --save_path <your_save_path> \
-#     --flow ../src/sdg_hub/flows/generation/knowledge/synth_knowledge1.5.yaml \
-#     --checkpoint_dir <your_checkpoint_dir> \
-#     --endpoint <your_endpoint>
-# ```
-# 
-# Note: For LLaMA 3.3, use `synth_knowledge1.5_llama3.3.yaml` as the flow configuration file.
+# Note: The script `src/sdg_hub/flow_runner.py` doesn't pass `RITS_API_KEY` to the header.
 
 
