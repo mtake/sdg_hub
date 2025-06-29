@@ -46,9 +46,6 @@ from datetime import datetime
 now = datetime.now()
 timestamp = now.strftime('%Y%m%d-%H%M%S')
 
-# %% [markdown]
-# ### Configure Output
-
 # %%
 force_ascii = True
 
@@ -105,9 +102,9 @@ use_mixtral = False
 # %% [markdown]
 # ### Configure Model Server
 # 
-# [RITS](https://rits.fmaas.res.ibm.com/) is an internal model server.
+# [RITS](https://rits.fmaas.res.ibm.com/) is a model server for internal use.
 # 
-# This notebook still works without RITS by hosting the model using vLLM.
+# This notebook still works without it by hosting the model using vLLM.
 
 # %%
 use_rits = True
@@ -376,12 +373,12 @@ if use_phi4:
     # Save comparison results to markdown file
     model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{phi4_short_name}.md"
 
-    if 'generated_data_phi4' not in locals():
-        generated_data_phi4 = []
+    if 'generated_data_phi4' in locals():
+        num_generated_data_phi4 = len(generated_data_phi4)
+    else:
+        num_generated_data_phi4 = 0
 
     with open(model_comparison_path, "w") as f:
-        num_generated_data_phi4 = len(generated_data_phi4)
-
         # Number of examples to compare
         k = num_generated_data_phi4
 
@@ -495,12 +492,12 @@ if use_llama3:
     # Save comparison results to markdown file
     model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama3_short_name}.md"
 
-    if 'generated_data_llama3' not in locals():
-        generated_data_llama3 = []
+    if 'generated_data_llama3' in locals():
+        num_generated_data_llama3 = len(generated_data_llama3)
+    else:
+        num_generated_data_llama3 = 0
 
     with open(model_comparison_path, "w") as f:
-        num_generated_data_llama3 = len(generated_data_llama3)
-
         # Number of examples to compare
         k = num_generated_data_llama3
 
@@ -610,12 +607,12 @@ if use_llama4:
     # Save comparison results to markdown file
     model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama4_short_name}.md"
 
-    if 'generated_data_llama4' not in locals():
-        generated_data_llama4 = []
+    if 'generated_data_llama4' in locals():
+        num_generated_data_llama4 = len(generated_data_llama4)
+    else:
+        num_generated_data_llama4 = 0
 
     with open(model_comparison_path, "w") as f:
-        num_generated_data_llama4 = len(generated_data_llama4)
-
         # Number of examples to compare
         k = num_generated_data_llama4
 
@@ -729,12 +726,12 @@ if use_mixtral:
     # Save comparison results to markdown file
     model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.md"
 
-    if 'generated_data_mixtral' not in locals():
-        generated_data_mixtral = []
+    if 'generated_data_mixtral' in locals():
+        num_generated_data_mixtral = len(generated_data_mixtral)
+    else:
+        num_generated_data_mixtral = 0
 
     with open(model_comparison_path, "w") as f:
-        num_generated_data_mixtral = len(generated_data_mixtral)
-
         # Number of examples to compare
         k = num_generated_data_mixtral
 
@@ -760,36 +757,35 @@ if use_mixtral:
 # %%
 used_models = 0
 
-if 'generated_data_phi4' not in locals():
-    generated_data_phi4 = []
-else:
+if 'generated_data_phi4' in locals():
+    num_generated_data_phi4 = len(generated_data_phi4)
     used_models += 1
+else:
+    num_generated_data_phi4 = 0
 
-if 'generated_data_llama3' not in locals():
-    generated_data_llama3 = []
-else:
+if 'generated_data_llama3' in locals():
+    num_generated_data_llama3 = len(generated_data_llama3)
     used_models += 1
+else:
+    num_generated_data_llama3 = 0
 
-if 'generated_data_llama4' not in locals():
-    generated_data_llama4 = []
-else:
+if 'generated_data_llama4' in locals():
+    num_generated_data_llama4 = len(generated_data_llama4)
     used_models += 1
+else:
+    num_generated_data_llama4 = 0
 
-if 'generated_data_mixtral' not in locals():
-    generated_data_mixtral = []
-else:
+if 'generated_data_mixtral' in locals():
+    num_generated_data_mixtral = len(generated_data_mixtral)
     used_models += 1
+else:
+    num_generated_data_mixtral = 0
 
 if used_models > 1:
     # Save comparison results to markdown file
     model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
 
     with open(model_comparison_path, "w") as f:
-        num_generated_data_phi4 = len(generated_data_phi4)
-        num_generated_data_llama3 = len(generated_data_llama3)
-        num_generated_data_llama4 = len(generated_data_llama4)
-        num_generated_data_mixtral = len(generated_data_mixtral)
-
         # Number of examples to compare
         k = max(num_generated_data_phi4, num_generated_data_llama3, num_generated_data_llama4, num_generated_data_mixtral)
 
