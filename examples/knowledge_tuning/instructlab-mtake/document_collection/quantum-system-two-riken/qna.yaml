@@ -28,7 +28,7 @@ seed_examples:
       - question: |
           IBM Quantum Heronの量子ビットは？
         answer: |
-	  156量子ビット
+          156量子ビット
       - question: |
           IBM Quantum Heronの速度を、1秒当たりの回路層操作数で表現すると？
         answer: |
@@ -47,7 +47,7 @@ seed_examples:
       - question: |
           IBM Quantum System Twoと「富岳」の統合により、可能になった事は？
         answer: |
-	  理研とIBMの研究者は、並列化されたワークロード、低遅延な古典・量子通信プロトコル、高度なコンパイルパスとライブラリーを開発できるようになります。
+          理研とIBMの研究者は、並列化されたワークロード、低遅延な古典・量子通信プロトコル、高度なコンパイルパスとライブラリーを開発できるようになります。
   - context: |
       IBM Quantum System Twoは、IBMのグローバルな量子コンピューター群を拡大するものであり、本日、日本の神戸で開催された記念式典にて正式に発表されました。記念式典には、理研の五神 真理事長、IBM Quantumバイス・プレジデントのジェイ・ガンベッタ（Jay Gambetta）、日本IBM 代表取締役社長の山口明夫のほか、地元国会議員、兵庫県知事、神戸市長、経済産業省、NEDO、文部科学省の代表者も参加しました。
     questions_and_answers:
@@ -70,7 +70,7 @@ seed_examples:
       - question: |
           日本IBM 代表取締役社長の名前は？
         answer: |
-	  山口明夫
+          山口明夫
   - context: |
       IBM Quantum バイス・プレジデントのジェイ・ガンベッタは、次のように述べています。「コンピューティングの未来は量子を中心としたものであり、理研とともにこのビジョンを実現するための大きな一歩を踏み出しています。世界中の業界リーダーや研究機関とともに、世界最大の量子システム群で可能性を拡大し続けています。最新のIBM Quantum Heron を搭載し、「富岳」と接続されたIBM Quantum System Twoにより、科学者やエンジニアは可能性をさらに追及できるようになります」
       理化学研究所 計算科学研究センター 量子HPC連携プラットフォーム部門 部門長 佐藤三久博士 は、次のように述べています。「理研は、「富岳」とIBM Quantum System Twoを連携させることで、日本をハイパフォーマンス・コンピューティングの新時代へと導くことを目指しています。私たちの使命は、科学界と産業界の両方で探求できる実用的な量子HPCハイブリッド・ワークフローを開発・実証することです。これらの2つのシステムを接続することで、このビジョンの実現に向けて重要な一歩を踏み出すことができます」
@@ -93,7 +93,7 @@ seed_examples:
 document_outline: |
   IBMと理化学研究所、米国外で初となるIBM Quantum System Twoを披露
 document:
-  repo: 'https://example.com/example/taxonomy'
+  repo: "https://example.com/example/taxonomy"
   commit: 0000000000000000000000000000000000000000
   patterns:
-    - XXXXXXXX.pdf
+    - quantum-system-two-riken.md
