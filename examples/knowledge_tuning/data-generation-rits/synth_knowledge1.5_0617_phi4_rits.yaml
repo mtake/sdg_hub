@@ -105,7 +105,7 @@
 - block_type: LLMBlock
   block_config:
     block_name: eval_relevancy_qa_pair
-    config_path: configs/knowledge_ja/evaluate_relevancy_fixed.yaml
+    config_path: configs/knowledge/evaluate_relevancy.yaml
     model_id: microsoft/phi-4
     output_cols:
       - feedback
