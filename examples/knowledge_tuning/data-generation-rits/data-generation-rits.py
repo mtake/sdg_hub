@@ -145,11 +145,12 @@ def get_base_url(model_name: str)-> str:
 # data_name = "teigaku-genzei-ibm-v0"
 # data_name = "teigaku-genzei-ibm-v2"
 # data_name = "teigaku-genzei-ibm-v3"
-data_name = "teigaku-genzei-ibm-v4"
+# data_name = "teigaku-genzei-ibm-v4"
+data_name = "ibm-newsroom"
 
 if data_name.endswith(("_ja", "-ja")):
     data_lang = "_ja"
-elif data_name.startswith("teigaku-genzei"):
+elif data_name.startswith(("teigaku-genzei", "ibm-newsroom")):
     data_lang = "_ja"
 else:
     data_lang = ""
