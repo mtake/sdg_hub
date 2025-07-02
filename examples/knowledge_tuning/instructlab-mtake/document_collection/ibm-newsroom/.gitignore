@@ -1,0 +1,8 @@
+*
+!.gitignore
+!README.md
+!jica.md
+!quantum-system-two-riken.md
+!quantum-system-one-u-tokyo.md
+!qna.yaml
+!*/
