@@ -1,6 +1,8 @@
 *
 !.gitignore
 !README.md
+!quantum-system-one-u-tokyo.html
+!quantum-system-one-u-tokyo.md
 !quantum-system-two-riken.html
 !quantum-system-two-riken.md
 !qna.yaml
