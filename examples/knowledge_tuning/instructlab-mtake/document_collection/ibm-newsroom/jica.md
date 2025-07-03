@@ -29,3 +29,7 @@
 Finastraは、融資、決済、財務・資本市場、ユニバーサルバンキング（リテールおよびデジタルバンキング）分野における金融サービス向けソフトウェアアプリケーションを提供するグローバル企業です。人々、企業、地域社会の可能性を引き出すことに尽力しており、テクノロジーと協業を通じて金融の未来を加速させることをビジョンとしています。この先進的なアプローチにより、世界のトップ50銀行のうち45行を含む約8,100の金融機関から信頼を得ています。詳細は[finastra.com](https://www.finastra.com/)をご覧ください。
 
 IBM、IBM ロゴ、ibm.comは、 米国やその他の国におけるInternational Business Machines Corporationの商標または登録商標です。他の製品名およびサービス名等は、それぞれIBMまたは各社の商標である場合があります。現時点での IBM の商標リストについては、ibm.com/trademarkをご覧ください。
+
+### Release Categories
+[ハイブリッドクラウド](https://jp.newsroom.ibm.com/announcements?category=775)
+[導入事例](https://jp.newsroom.ibm.com/announcements?category=779)

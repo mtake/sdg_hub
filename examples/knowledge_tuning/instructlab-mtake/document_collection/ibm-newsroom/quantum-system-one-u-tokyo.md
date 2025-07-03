@@ -25,3 +25,6 @@ IBMフェロー 兼 IBM Quantum バイス・プレジデントのジェイ・ガ
 * IBM Quantum System OneへのIBM Quantum Heronプロセッサーの導入、およびIBM Quantum System OneのスーパーコンピューターMiyabiへの接続は、適切な輸出ライセンスの発行と最終契約の締結を条件としています。
 
 IBM、IBMロゴ、ibm.comは、米国やその他の国におけるInternational Business Machines Corporationの商標または登録商標です。他の製品名およびサービス名等は、それぞれIBMまたは各社の商標である場合があります。現時点での IBM の商標リストについては、ibm.com/trademarkをご覧ください。
+
+### Release Categories
+[リサーチ＆イノベーション](https://jp.newsroom.ibm.com/announcements?category=774)
