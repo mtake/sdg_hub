@@ -21,37 +21,39 @@
 -->
 
 ## 項目別ダウンロード
-- [表紙・目次 p.1-2](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/01.pdf)
-- [I 昨年と比べて変わった点(定額減税) p.3-4](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/02.pdf)
-- [II 年末調整とは p.5-6](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/03.pdf)
-- [III 年末調整のしかた、1 年末調整の手順 p.7](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/05.pdf)
-- [2 各種控除額の確認、2-1 扶養控除等(異動)申告書の受理と内容の確認 p.8-16(重複あり)](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/07.pdf)
-- [2-2 基礎控除申告書、配偶者控除等(兼定額減税)申告書及び所得金額調整控除申告書の受理と内容の確認 p.16(重複あり)-21(重複あり)](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/08.pdf)
-- [2-3 保険料控除申告書の受理と内容の確認 p.21(重複あり)-28](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/09.pdf)
-- [2-4 (特定増改築等)住宅借入金等特別控除申告書の受理と内容の確認 p.29-33](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/10.pdf)
-- [3 年税額の計算 p.34-38](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/11.pdf)
-- [4 過不足額の精算 p.39-46](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/12.pdf)
+- [表紙・目次 p.1-2](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/01.pdf) [[md](01.md)]
+- [I 昨年と比べて変わった点(定額減税) p.3-4](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/02.pdf) [[md](02.md)]
+- [II 年末調整とは p.5-6](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/03.pdf) [[md](03.md)]
+- [III 年末調整のしかた、1 年末調整の手順 p.7](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/05.pdf) [[md](05.md)]
+- [2 各種控除額の確認、2-1 扶養控除等(異動)申告書の受理と内容の確認 p.8-16(重複あり)](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/07.pdf) [[md](07.md)]
+- [2-2 基礎控除申告書、配偶者控除等(兼定額減税)申告書及び所得金額調整控除申告書の受理と内容の確認 p.16(重複あり)-21(重複あり)](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/08.pdf) [[md](08.md)]
+- [2-3 保険料控除申告書の受理と内容の確認 p.21(重複あり)-28](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/09.pdf) [[md](09.md)]
+- [2-4 (特定増改築等)住宅借入金等特別控除申告書の受理と内容の確認 p.29-33](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/10.pdf) [[md](10.md)]
+- [3 年税額の計算 p.34-38](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/11.pdf) [[md](11.md)]
+- [4 過不足額の精算 p.39-46](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/12.pdf) [[md](12.md)]
   - (使用しない) [見開きの図 p.42-43](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/12-2.pdf)
-- [5 税額の納付と所得税徴収高計算書(納付書)の記載 p.47](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/13.pdf)
-- [6 年末調整後に給与の追加払や扶養親族等の異動があった場合の再調整 p.48](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/14.pdf)
-- [IV 令和7年分の給与の源泉徴収事務 p.49-50](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/15.pdf)
-- [令和6年分の年末調整等のための給与所得控除後の給与等の金額の表 p.51-59](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/17.pdf)
-- [令和6年分の年末調整のための算出所得税額の速算表、令和6年分の配偶者控除額及び配偶者特別控除額の一覧表、令和6年分の基礎控除額の表、令和6年分の扶養控除額等の表 p.60-61](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/18.pdf)
-- [「令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表」(64ページ)の使い方 p.62-63](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/19.pdf)
-- [令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表 p.64](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/20.pdf)
+- [5 税額の納付と所得税徴収高計算書(納付書)の記載 p.47](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/13.pdf) [[md](13.md)]
+- [6 年末調整後に給与の追加払や扶養親族等の異動があった場合の再調整 p.48](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/14.pdf) [[md](14.md)]
+- [IV 令和7年分の給与の源泉徴収事務 p.49-50](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/15.pdf) [[md](15.md)]
+- [令和6年分の年末調整等のための給与所得控除後の給与等の金額の表 p.51-59](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/17.pdf) [[md](17.md)]
+- [令和6年分の年末調整のための算出所得税額の速算表、令和6年分の配偶者控除額及び配偶者特別控除額の一覧表、令和6年分の基礎控除額の表、令和6年分の扶養控除額等の表 p.60-61](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/18.pdf) [[md](18.md)]
+- [「令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表」(64ページ)の使い方 p.62-63](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/19.pdf) [[md](19.md)]
+- [令和6年分の扶養控除額及び障害者等の控除額の合計額の早見表 p.64](https://www.nta.go.jp/publication/pamph/gensen/nencho2024/pdf/20.pdf) [[md](20.md)]
+- 結合後 [[md](nencho.md)]
 
-## 項目別pdfをmarkdownへ変換後の手作業での修正
+---
+
+## 項目別pdfをmdへ変換後の手作業での修正
 ```bash
 sed -i 's/^G//g' ??.md  # ^G (^V^Gで入力) を削除
 sed -i 's/^Z//g' ??.md  # ^Z (^V^Zで入力) を削除
 sed -i 's/　/ /g' ??.md  # 全角スペースを半角スペースに変換
 ```
-- 誤認識したテキストを削除する
-- 余分な空白、空行を削除する
-- レイアウトを修正する
-- 図を削除する
+- （図や）誤認識したテキストを削除する
+- 余分な空白、空行、制御文字等を削除する
+- 文章構造（タイトル、レベル、箇条書き）を修正する
 - 表を修正する
-- 数字を統一？
+- 数式をlatex形式で表現する
 
 <!--
 ⑴
@@ -66,7 +68,7 @@ sed -i 's/　/ /g' ??.md  # 全角スペースを半角スペースに変換
 ⑽
 -->
 
-## 項目別markdownの結合
+## 項目別mdの結合
 ```bash
 rm nencho.md; for f in ??.md; do cat $f >> nencho.md; done
 ```
