@@ -22,7 +22,7 @@ IBMフェロー 兼 IBM Quantum バイス・プレジデントのジェイ・ガ
 
 東京大学とIBMが2019年に「Japan&ndash;IBM Quantum Partnershipを設立して以来、 東京大学は日本における量子コンピューティングへのアクセス拡大に尽力しています。東京大学とIBMの「[Japan&ndash;IBM Quantum Partnership](https://www.u-tokyo.ac.jp/content/400129072.pdf)」は、2020年のQII設立を含め、産学官の連携を加速し、量子科学、ビジネス、教育における日本のリーダーシップを推進することを目的としています。QIIは、日本に設置されたIBM Quantum System Oneで実行された実験に基づいて、140以上の研究論文を発表しています。また、東京大学は、高エネルギー物理学、材料科学、最適化に関するIBM Quantumのワーキング・グループのメンバーであるほか、今後10年間で[4万人以上の学生を量子人材として育成](https://jp.newsroom.ibm.com/2025-04-08-blog-japan-korea-us-quantum-education)することを目指す日本、韓国、米国の大学コンソーシアムの一員でもあります。
 
-* IBM Quantum System OneへのIBM Quantum Heronプロセッサーの導入、およびIBM Quantum System OneのスーパーコンピューターMiyabiへの接続は、適切な輸出ライセンスの発行と最終契約の締結を条件としています。
+＊ IBM Quantum System OneへのIBM Quantum Heronプロセッサーの導入、およびIBM Quantum System OneのスーパーコンピューターMiyabiへの接続は、適切な輸出ライセンスの発行と最終契約の締結を条件としています。
 
 IBM、IBMロゴ、ibm.comは、米国やその他の国におけるInternational Business Machines Corporationの商標または登録商標です。他の製品名およびサービス名等は、それぞれIBMまたは各社の商標である場合があります。現時点での IBM の商標リストについては、ibm.com/trademarkをご覧ください。
 
