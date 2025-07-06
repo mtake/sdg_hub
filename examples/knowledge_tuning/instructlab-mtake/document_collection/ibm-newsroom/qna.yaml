@@ -1,7 +1,7 @@
 created_by: IBM
 version: 3
-# domain: technology
 domain: press release
+# domain: research and innovation
 seed_examples:
   - context: |
       IBM と理化学研究所（理研）は本日、米国外およびIBM Quantumデータセンター以外に初めて展開されるIBM Quantum System Twoを披露しました。このシステムが稼働開始になったことは、地球上で最も高性能なスーパーコンピューターの１つである日本の「富岳」と同一建屋に設置された最初の量子コンピューターとしても画期的なことです。今回のIBM Quantum System Twoの設置は、経済産業省所管の新エネルギー・産業技術総合開発機構（NEDO）が委託する「ポスト５Ｇ情報通信システム基盤強化研究開発事業」の「量子・スパコンの統合利用技術の開発」プロジェクトの一環として実施されました。
@@ -96,12 +96,12 @@ seed_examples:
           理研とIBMの研究者による、これまでの成果は？
         answer: |
           科学雑誌「[Science Advances](https://doi.org/10.1126/sciadv.adu9991)」に掲載された、硫化鉄の電子構造を正確にモデル化するためのサンプルベースの量子対角化（SQD、sample-based quantum diagonalization）技術に基づく研究、ほか。
-# document_outline: |
-#   IBMと理化学研究所、米国外で初となるIBM Quantum System Twoを披露
 document_outline: |
   IBMプレスリリース
+# document_outline: |
+#   IBMと理化学研究所、米国外で初となるIBM Quantum System Twoを披露
 document:
   repo: "https://example.com/example/taxonomy"
   commit: 0000000000000000000000000000000000000000
   patterns:
-    - quantum-system-two-riken.md
+    - qs2-riken.md
