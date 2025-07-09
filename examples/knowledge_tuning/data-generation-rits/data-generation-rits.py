@@ -70,12 +70,6 @@ save_freq = 2      # Frequency (in batches) at which to save checkpoints, by def
 # ### Configure Models
 
 # %%
-# Served model name
-phi4_model_name = "microsoft/phi-4"
-llama3_model_name = "meta-llama/llama-3-3-70b-instruct"
-llama4_model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-mixtral_model_name = "mistralai/mixtral-8x7B-instruct-v0.1"
-
 # HuggingFace model name
 phi4_model_name_hf = "microsoft/phi-4"
 # llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
@@ -83,6 +77,12 @@ llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
 # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
 llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
 mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+
+# Served model name
+phi4_model_name = "microsoft/phi-4"
+llama3_model_name = "meta-llama/llama-3-3-70b-instruct"
+llama4_model_name = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+mixtral_model_name = "mistralai/mixtral-8x7B-instruct-v0.1"
 
 phi4_short_name = "phi4"
 llama3_short_name = "llama3"
