@@ -20,12 +20,8 @@
 # Before running this notebook, you'll need to:
 # 
 # ```bash
-# pip install sdg-hub
+# pip install sdg-hub[examples]
 # ```
-
-# %%
-# %%capture
-# %pip install transformers
 
 # %%
 # Import required libraries
@@ -60,7 +56,7 @@ flow_config = "synth_knowledge1.5"
 # ### Configure Parallelism
 
 # %%
-# src/sdg_hub/flow_runner.py
+# See src/sdg_hub/flow_runner.py
 num_workers = 32   # Number of worker processes to use, by default 32.
 batch_size = 8     # Batch size for processing, by default 8.
 save_freq = 2      # Frequency (in batches) at which to save checkpoints, by default 2.
@@ -143,7 +139,7 @@ def get_base_url(model_name: str)-> str:
 # 
 # Set `"ja"` to `data_lang` if the seed data are in Japanese. Otherwise, set `""`.
 # 
-# Set how many times for each seed data to be used for generation to `duplicate_times`.
+# Set how many times (e.g., `5`) for each seed data to be used for generation to `duplicate_times`. It could generate more data at the cost of generation time.
 
 # %%
 # data_name = "20250411_en_2"
@@ -153,7 +149,8 @@ def get_base_url(model_name: str)-> str:
 # data_name = "teigaku-genzei-ibm-v2"
 # data_name = "teigaku-genzei-ibm-v3"
 # data_name = "teigaku-genzei-ibm-v4"
-data_name = "ibm-newsroom"
+data_name = "teigaku-genzei-ibm-v5"
+# data_name = "ibm-newsroom"
 
 if data_name.endswith(("_ja", "-ja")):
     data_lang = "ja"
@@ -162,8 +159,8 @@ elif data_name.startswith(("teigaku-genzei", "ibm-newsroom")):
 else:
     data_lang = ""
 
-# duplicate_times = 1
-duplicate_times = 5
+duplicate_times = 1
+# duplicate_times = 5
 
 # %%
 _data_name = f"_{data_name}" if data_name is not None and len(data_name) > 0 else ""
