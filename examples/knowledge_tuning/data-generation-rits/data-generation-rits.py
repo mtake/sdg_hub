@@ -1,7 +1,7 @@
 # %% [markdown]
-# # Synthetic Data Generation Tutorial using phi4, llama3, llama4, and mixtral
+# # Japanese Synthetic Data Generation Tutorial using phi4
 # 
-# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from documents using large language models like phi4. We will also generate data using llama3, llama4, and mixtral models for comparison. We'll cover:
+# This tutorial demonstrates how to use SDG repository to generate synthetic question-answer pairs from Japanese documents using large language models like phi4. We will also generate data using llama3, llama4, and mixtral models for comparison. We'll cover:
 # 
 # 1. Setting up the environment
 # 2. Connecting to LLM servers
@@ -20,7 +20,7 @@
 # Before running this notebook, you'll need to:
 # 
 # ```bash
-# pip install sdg-hub==0.1.0a4
+# pip install sdg-hub
 # ```
 
 # %%
@@ -138,6 +138,13 @@ def get_base_url(model_name: str)-> str:
 # %% [markdown]
 # ### Configure Seed Data
 
+# %% [markdown]
+# Configure `data_name` such that the seed data file is `seed_data_${data_name}.jsonl`.
+# 
+# Set `"ja"` to `data_lang` if the seed data are in Japanese. Otherwise, set `""`.
+# 
+# Set how many times for each seed data to be used for generation to `duplicate_times`.
+
 # %%
 # data_name = "20250411_en_2"
 # data_name = "20250411_ja"
@@ -149,20 +156,22 @@ def get_base_url(model_name: str)-> str:
 data_name = "ibm-newsroom"
 
 if data_name.endswith(("_ja", "-ja")):
-    data_lang = "_ja"
+    data_lang = "ja"
 elif data_name.startswith(("teigaku-genzei", "ibm-newsroom")):
-    data_lang = "_ja"
+    data_lang = "ja"
 else:
     data_lang = ""
 
-seed_data_name = f"seed_data_{data_name}"
-seed_data_path = f"{seed_data_name}.jsonl"
-
-# %%
 # duplicate_times = 1
 duplicate_times = 5
 
-data_name_duplicate = f"{data_name}-d{duplicate_times}" if duplicate_times > 1 else data_name
+# %%
+_data_name = f"_{data_name}" if data_name is not None and len(data_name) > 0 else ""
+_data_lang = f"_{data_lang}" if data_lang is not None and len(data_lang) > 0 else ""
+
+seed_data_path = f"seed_data{_data_name}.jsonl"
+
+_data_name_duplicate = f"{_data_name}_d{duplicate_times}" if duplicate_times > 1 else _data_name
 
 # %% [markdown]
 # ### Load and Prepare Seed Data
@@ -335,7 +344,7 @@ if use_phi4 and phi4_model_name not in PromptRegistry.get_registry():
 # %%
 if use_phi4:
     # Load the flow configuration from YAML file
-    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{data_lang}_{phi4_short_name}_rits.yaml")
+    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{_data_lang}_{phi4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_phi4 = SDG(
@@ -353,16 +362,16 @@ if use_phi4:
 # %%
 if use_phi4:
     # Generate data and save checkpoints
-    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{phi4_short_name}")
+    generated_data_phi4 = sdg_phi4.generate(ds, checkpoint_dir=f"Tmp{_data_name_duplicate}_{phi4_short_name}")
 
-    generated_data_path_phi4 = f"generated_data_{data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
+    generated_data_path_phi4 = f"generated_data{_data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
     generated_data_phi4.to_json(generated_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_phi4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_phi4 = to_messages(generated_data_phi4)
 
-    messages_data_path_phi4 = f"messages_data_{data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
+    messages_data_path_phi4 = f"messages_data{_data_name_duplicate}_{timestamp}_{phi4_short_name}.jsonl"
     messages_data_phi4.to_json(messages_data_path_phi4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
@@ -372,7 +381,7 @@ if use_phi4:
 # %%
 if use_phi4:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{phi4_short_name}.md"
+    model_comparison_path = f"model_comparison{_data_name_duplicate}_{timestamp}_{phi4_short_name}.md"
 
     if 'generated_data_phi4' in locals():
         num_generated_data_phi4 = len(generated_data_phi4)
@@ -454,7 +463,7 @@ if use_llama3 and llama3_model_name not in PromptRegistry.get_registry():
 # %%
 if use_llama3:
     # Load the flow configuration from YAML file
-    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{data_lang}_{llama3_short_name}_rits.yaml")
+    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{_data_lang}_{llama3_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
@@ -472,16 +481,16 @@ if use_llama3:
 # %%
 if use_llama3:
     # Generate data and save checkpoints
-    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{llama3_short_name}")
+    generated_data_llama3 = sdg_llama3.generate(ds, checkpoint_dir=f"Tmp{_data_name_duplicate}_{llama3_short_name}")
 
-    generated_data_path_llama3 = f"generated_data_{data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
+    generated_data_path_llama3 = f"generated_data{_data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
     generated_data_llama3.to_json(generated_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_llama3}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama3 = to_messages(generated_data_llama3)
 
-    messages_data_path_llama3 = f"messages_data_{data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
+    messages_data_path_llama3 = f"messages_data{_data_name_duplicate}_{timestamp}_{llama3_short_name}.jsonl"
     messages_data_llama3.to_json(messages_data_path_llama3, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
@@ -491,7 +500,7 @@ if use_llama3:
 # %%
 if use_llama3:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama3_short_name}.md"
+    model_comparison_path = f"model_comparison{_data_name_duplicate}_{timestamp}_{llama3_short_name}.md"
 
     if 'generated_data_llama3' in locals():
         num_generated_data_llama3 = len(generated_data_llama3)
@@ -569,7 +578,7 @@ if use_llama4 and llama4_model_name not in PromptRegistry.get_registry():
 # %%
 if use_llama4:
     # Load the flow configuration from YAML file
-    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{data_lang}_{llama4_short_name}_rits.yaml")
+    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{_data_lang}_{llama4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama4 = SDG(
@@ -587,16 +596,16 @@ if use_llama4:
 # %%
 if use_llama4:
     # Generate data and save checkpoints
-    generated_data_llama4 = sdg_llama4.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{llama4_short_name}")
+    generated_data_llama4 = sdg_llama4.generate(ds, checkpoint_dir=f"Tmp{_data_name_duplicate}_{llama4_short_name}")
 
-    generated_data_path_llama4 = f"generated_data_{data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
+    generated_data_path_llama4 = f"generated_data{_data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
     generated_data_llama4.to_json(generated_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_llama4}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_llama4 = to_messages(generated_data_llama4)
 
-    messages_data_path_llama4 = f"messages_data_{data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
+    messages_data_path_llama4 = f"messages_data{_data_name_duplicate}_{timestamp}_{llama4_short_name}.jsonl"
     messages_data_llama4.to_json(messages_data_path_llama4, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_llama4}", flush=True)
 
@@ -606,7 +615,7 @@ if use_llama4:
 # %%
 if use_llama4:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{llama4_short_name}.md"
+    model_comparison_path = f"model_comparison{_data_name_duplicate}_{timestamp}_{llama4_short_name}.md"
 
     if 'generated_data_llama4' in locals():
         num_generated_data_llama4 = len(generated_data_llama4)
@@ -688,7 +697,7 @@ if use_mixtral and mixtral_model_name not in PromptRegistry.get_registry():
 # %%
 if use_mixtral:
     # Load the flow configuration from YAML file
-    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{data_lang}_{mixtral_short_name}_rits.yaml")
+    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{_data_lang}_{mixtral_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_mixtral = SDG(
@@ -706,16 +715,16 @@ if use_mixtral:
 # %%
 if use_mixtral:
     # Generate data and save checkpoints
-    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp_{data_name_duplicate}_{mixtral_short_name}")
+    generated_data_mixtral = sdg_mixtral.generate(ds, checkpoint_dir=f"Tmp{_data_name_duplicate}_{mixtral_short_name}")
 
-    generated_data_path_mixtral = f"generated_data_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
+    generated_data_path_mixtral = f"generated_data{_data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
     generated_data_mixtral.to_json(generated_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Data saved to {generated_data_path_mixtral}", flush=True)
 
     # Save generated data in messages format for training
     messages_data_mixtral = to_messages(generated_data_mixtral)
 
-    messages_data_path_mixtral = f"messages_data_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
+    messages_data_path_mixtral = f"messages_data{_data_name_duplicate}_{timestamp}_{mixtral_short_name}.jsonl"
     messages_data_mixtral.to_json(messages_data_path_mixtral, orient="records", lines=True, force_ascii=force_ascii)
     print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
@@ -725,7 +734,7 @@ if use_mixtral:
 # %%
 if use_mixtral:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}_{mixtral_short_name}.md"
+    model_comparison_path = f"model_comparison{_data_name_duplicate}_{timestamp}_{mixtral_short_name}.md"
 
     if 'generated_data_mixtral' in locals():
         num_generated_data_mixtral = len(generated_data_mixtral)
@@ -784,7 +793,7 @@ else:
 
 if used_models > 1:
     # Save comparison results to markdown file
-    model_comparison_path = f"model_comparison_{data_name_duplicate}_{timestamp}.md"
+    model_comparison_path = f"model_comparison{_data_name_duplicate}_{timestamp}.md"
 
     with open(model_comparison_path, "w") as f:
         # Number of examples to compare
@@ -826,6 +835,6 @@ if used_models > 1:
 # ## Production Usage
 # For large-scale data generation, export this notebook to a python script and execute it.
 # 
-# Note: The script `src/sdg_hub/flow_runner.py` doesn't pass `RITS_API_KEY` to the header.
+# Note: The script `src/sdg_hub/flow_runner.py` cannot be used with RITS since it doesn't pass `RITS_API_KEY` to the header.
 
 
