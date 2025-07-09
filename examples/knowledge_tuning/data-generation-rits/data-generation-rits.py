@@ -159,8 +159,8 @@ elif data_name.startswith(("teigaku-genzei", "ibm-newsroom")):
 else:
     data_lang = ""
 
-duplicate_times = 1
-# duplicate_times = 5
+# duplicate_times = 1
+duplicate_times = 5
 
 # %%
 _data_name = f"_{data_name}" if data_name is not None and len(data_name) > 0 else ""
