@@ -17,7 +17,7 @@
 - block_type: LLMBlock
   block_config:
     block_name: gen_atomic_facts
-    config_path: configs/knowledge/atomic_facts.yaml
+    config_path: configs/knowledge_en/atomic_facts.yaml
     model_id: meta-llama/llama-4-maverick-17b-128e-instruct-fp8
     output_cols:
       - summary_atomic_facts
@@ -55,7 +55,7 @@
 - block_type: LLMBlock
   block_config:
     block_name: knowledge generation
-    config_path: configs/knowledge/generate_questions_responses.yaml
+    config_path: configs/knowledge_en/generate_questions_responses.yaml
     model_id: meta-llama/llama-4-maverick-17b-128e-instruct-fp8
     output_cols:
       - question

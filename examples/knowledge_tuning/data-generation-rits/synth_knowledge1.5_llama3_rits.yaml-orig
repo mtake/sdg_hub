@@ -8,7 +8,7 @@
   block_config:
     block_name: gen_detailed_summary
     config_path: configs/knowledge/detailed_summary.yaml
-    model_id: microsoft/phi-4
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - summary_detailed
   gen_kwargs:
@@ -17,8 +17,8 @@
 - block_type: LLMBlock
   block_config:
     block_name: gen_atomic_facts
-    config_path: configs/knowledge_en/atomic_facts.yaml
-    model_id: microsoft/phi-4
+    config_path: configs/knowledge/atomic_facts.yaml
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - summary_atomic_facts
   gen_kwargs:
@@ -28,7 +28,7 @@
   block_config:
     block_name: gen_extractive_summary
     config_path: configs/knowledge/extractive_summary.yaml
-    model_id: microsoft/phi-4
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - summary_extractive
   gen_kwargs:
@@ -55,8 +55,8 @@
 - block_type: LLMBlock
   block_config:
     block_name: knowledge generation
-    config_path: configs/knowledge_en/generate_questions_responses.yaml
-    model_id: microsoft/phi-4
+    config_path: configs/knowledge/generate_questions_responses.yaml
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - question
       - response
@@ -73,7 +73,7 @@
   block_config:
     block_name: eval_faithfulness_qa_pair
     config_path: configs/knowledge/evaluate_faithfulness.yaml
-    model_id: microsoft/phi-4
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - explanation
       - judgment
@@ -94,7 +94,7 @@
   block_config:
     block_name: eval_relevancy_qa_pair
     config_path: configs/knowledge/evaluate_relevancy.yaml
-    model_id: microsoft/phi-4
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - feedback
       - score
@@ -116,7 +116,7 @@
   block_config:
     block_name: eval_verify_question
     config_path: configs/knowledge/evaluate_question.yaml
-    model_id: microsoft/phi-4
+    model_id: meta-llama/llama-3-3-70b-instruct
     output_cols:
       - explanation
       - rating
