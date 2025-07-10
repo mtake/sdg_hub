@@ -127,7 +127,7 @@ else:
     default_headers: dict[str, str] = {}
     model_dict: dict[str, str] = {}
 
-def get_base_url(model_name: str)-> str:
+def get_base_url(model_name: str) -> str:
     endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
     return f"{endpoint}/v1"
 
