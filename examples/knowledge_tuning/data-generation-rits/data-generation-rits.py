@@ -149,7 +149,8 @@ def get_base_url(model_name: str)-> str:
 # data_name = "teigaku-genzei-ibm-v2"
 # data_name = "teigaku-genzei-ibm-v3"
 # data_name = "teigaku-genzei-ibm-v4"
-data_name = "teigaku-genzei-ibm-v5"
+# data_name = "teigaku-genzei-ibm-v5"
+data_name = "teigaku-genzei-ibm-v6"
 # data_name = "ibm-newsroom"
 # data_name = "ibm-newsroom-en"
 
