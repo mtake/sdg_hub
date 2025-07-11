@@ -376,6 +376,8 @@ if use_phi4:
 
 # %% [markdown]
 # ### Compare Generated Data with phi4
+# 
+# Save the outputs from the model to a markdown file for easy review.
 
 # %%
 if use_phi4:
@@ -495,6 +497,8 @@ if use_llama3:
 
 # %% [markdown]
 # ### Compare Generated Data with llama3
+# 
+# Save the outputs from the model to a markdown file for easy review.
 
 # %%
 if use_llama3:
@@ -610,6 +614,8 @@ if use_llama4:
 
 # %% [markdown]
 # ### Compare Generated Data with llama4
+# 
+# Save the outputs from the model to a markdown file for easy review.
 
 # %%
 if use_llama4:
@@ -729,6 +735,8 @@ if use_mixtral:
 
 # %% [markdown]
 # ### Compare Generated Data with mixtral
+# 
+# Save the outputs from the model to a markdown file for easy review.
 
 # %%
 if use_mixtral:
@@ -761,7 +769,7 @@ if use_mixtral:
 # %% [markdown]
 # ## (Optional) Compare Generated Data
 # 
-# Let's compare the outputs from both models by saving them to a markdown file for easy review.
+# Let's compare the outputs from the models by saving them to a markdown file for easy review.
 
 # %%
 used_models = 0
