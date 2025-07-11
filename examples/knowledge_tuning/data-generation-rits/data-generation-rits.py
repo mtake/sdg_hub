@@ -50,7 +50,6 @@ force_ascii = True
 
 # %%
 flow_config = "synth_knowledge1.5"
-# flow_config = "synth_knowledge1.5_0617"
 
 # %% [markdown]
 # ### Configure Parallelism
