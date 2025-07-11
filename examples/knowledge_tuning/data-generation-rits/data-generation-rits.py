@@ -416,7 +416,7 @@ if use_phi4:
 # 
 # Start the vLLM server (run in terminal):
 # ```bash
-# vllm serve ${llama3_model_name_hf} --served-model-name ${llama3_model_name} --tensor-parallel-size 4
+# vllm serve ${llama3_model_name_hf} --served-model-name ${llama3_model_name} --tensor-parallel-size 8
 # ```
 
 # %%
@@ -535,7 +535,7 @@ if use_llama3:
 # 
 # Start the vLLM server (run in terminal):
 # ```bash
-# vllm serve ${llama4_model_name_hf} --served-model-name ${llama4_model_name}
+# vllm serve ${llama4_model_name_hf} --served-model-name ${llama4_model_name} --tensor-parallel-size 8
 # ```
 
 # %%
@@ -650,7 +650,7 @@ if use_llama4:
 # 
 # Start the vLLM server (run in terminal):
 # ```bash
-# vllm serve ${mixtral_model_name_hf} --served-model-name ${mixtral_model_name} --tensor-parallel-size 2
+# vllm serve ${mixtral_model_name_hf} --served-model-name ${mixtral_model_name} --tensor-parallel-size 8
 # ```
 
 # %%
