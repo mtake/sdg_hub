@@ -375,7 +375,7 @@ if use_phi4:
     print(f"Messages data saved to {messages_data_path_phi4}", flush=True)
 
 # %% [markdown]
-# ### Compare Generated Data with phi4
+# ### Review Generated Data with phi4
 # 
 # Save the outputs from the model to a markdown file for easy review.
 
@@ -496,7 +496,7 @@ if use_llama3:
     print(f"Messages data saved to {messages_data_path_llama3}", flush=True)
 
 # %% [markdown]
-# ### Compare Generated Data with llama3
+# ### Review Generated Data with llama3
 # 
 # Save the outputs from the model to a markdown file for easy review.
 
@@ -613,7 +613,7 @@ if use_llama4:
     print(f"Messages data saved to {messages_data_path_llama4}", flush=True)
 
 # %% [markdown]
-# ### Compare Generated Data with llama4
+# ### Review Generated Data with llama4
 # 
 # Save the outputs from the model to a markdown file for easy review.
 
@@ -734,7 +734,7 @@ if use_mixtral:
     print(f"Messages data saved to {messages_data_path_mixtral}", flush=True)
 
 # %% [markdown]
-# ### Compare Generated Data with mixtral
+# ### Review Generated Data with mixtral
 # 
 # Save the outputs from the model to a markdown file for easy review.
 
