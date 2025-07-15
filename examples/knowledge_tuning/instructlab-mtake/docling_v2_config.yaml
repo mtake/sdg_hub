@@ -2,7 +2,7 @@ export:
   formats:
     doctags: false
     html: false
-    json: true
+    json: false
     markdown: true
     text: false
 pipeline:
