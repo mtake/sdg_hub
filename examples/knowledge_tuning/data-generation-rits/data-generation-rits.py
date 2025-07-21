@@ -344,7 +344,7 @@ if use_phi4 and phi4_model_name not in PromptRegistry.get_registry():
 # %%
 if use_phi4:
     # Load the flow configuration from YAML file
-    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"{flow_config}{_data_lang}_{phi4_short_name}_rits.yaml")
+    flow_phi4 = Flow(phi4_client).get_flow_from_file(f"flows/{flow_config}{_data_lang}_{phi4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_phi4 = SDG(
@@ -465,7 +465,7 @@ if use_llama3 and llama3_model_name not in PromptRegistry.get_registry():
 # %%
 if use_llama3:
     # Load the flow configuration from YAML file
-    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"{flow_config}{_data_lang}_{llama3_short_name}_rits.yaml")
+    flow_llama3 = Flow(llama3_client).get_flow_from_file(f"flows/{flow_config}{_data_lang}_{llama3_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama3 = SDG(
@@ -582,7 +582,7 @@ if use_llama4 and llama4_model_name not in PromptRegistry.get_registry():
 # %%
 if use_llama4:
     # Load the flow configuration from YAML file
-    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"{flow_config}{_data_lang}_{llama4_short_name}_rits.yaml")
+    flow_llama4 = Flow(llama4_client).get_flow_from_file(f"flows/{flow_config}{_data_lang}_{llama4_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_llama4 = SDG(
@@ -703,7 +703,7 @@ if use_mixtral and mixtral_model_name not in PromptRegistry.get_registry():
 # %%
 if use_mixtral:
     # Load the flow configuration from YAML file
-    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"{flow_config}{_data_lang}_{mixtral_short_name}_rits.yaml")
+    flow_mixtral = Flow(mixtral_client).get_flow_from_file(f"flows/{flow_config}{_data_lang}_{mixtral_short_name}_rits.yaml")
 
     # Initialize the SDG pipeline with processing parameters
     sdg_mixtral = SDG(
