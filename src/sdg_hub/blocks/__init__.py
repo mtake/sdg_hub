@@ -4,7 +4,7 @@ This package provides various block implementations for data generation, process
 """
 
 # Local
-from ..registry import BlockRegistry
+from .registry import BlockRegistry
 from .deprecated_blocks import (
     CombineColumnsBlock,
     DuplicateColumns,
@@ -26,6 +26,7 @@ from .transform import (
     TextConcatBlock,
     UniformColumnValueSetter,
 )
+from .evaluation import EvaluateFaithfulnessBlock, EvaluateRelevancyBlock
 # All blocks moved to deprecated_blocks or transform modules
 
 __all__ = [
@@ -49,4 +50,6 @@ __all__ = [
     "TextParserBlock",
     "BlockRegistry",
     "PromptBuilderBlock",
+    "EvaluateFaithfulnessBlock",
+    "EvaluateRelevancyBlock",
 ]
