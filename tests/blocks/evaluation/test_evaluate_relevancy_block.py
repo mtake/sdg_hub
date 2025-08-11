@@ -2,19 +2,19 @@
 """Tests for EvaluateRelevancyBlock."""
 
 # Standard
+from unittest.mock import MagicMock, patch
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
 
 # Third Party
 from datasets import Dataset
-import pytest
 
 # First Party
-from sdg_hub.blocks.evaluation.evaluate_relevancy_block import (
+from sdg_hub import BlockRegistry
+from sdg_hub.core.blocks.evaluation.evaluate_relevancy_block import (
     EvaluateRelevancyBlock,
 )
-from sdg_hub.blocks.registry import BlockRegistry
+import pytest
 
 
 class TestEvaluateRelevancyBlock:
@@ -213,9 +213,7 @@ class TestEvaluateRelevancyBlock:
         # Dataset missing required columns
         invalid_dataset = Dataset.from_dict({"wrong_column": ["value"]})
 
-        with pytest.raises(
-            ValueError, match="EvaluateRelevancyBlock requires columns"
-        ):
+        with pytest.raises(ValueError, match="EvaluateRelevancyBlock requires columns"):
             block._validate_custom(invalid_dataset)
 
     def test_validate_custom_with_uninitialized_blocks(
@@ -241,11 +239,11 @@ class TestEvaluateRelevancyBlock:
         with pytest.raises(ValueError, match="All internal blocks must be initialized"):
             block._validate_custom(sample_dataset)
 
-    @patch("sdg_hub.blocks.evaluation.evaluate_relevancy_block.LLMChatBlock")
-    @patch("sdg_hub.blocks.evaluation.evaluate_relevancy_block.PromptBuilderBlock")
-    @patch("sdg_hub.blocks.evaluation.evaluate_relevancy_block.TextParserBlock")
+    @patch("sdg_hub.core.blocks.evaluation.evaluate_relevancy_block.LLMChatBlock")
+    @patch("sdg_hub.core.blocks.evaluation.evaluate_relevancy_block.PromptBuilderBlock")
+    @patch("sdg_hub.core.blocks.evaluation.evaluate_relevancy_block.TextParserBlock")
     @patch(
-        "sdg_hub.blocks.evaluation.evaluate_relevancy_block.ColumnValueFilterBlock"
+        "sdg_hub.core.blocks.evaluation.evaluate_relevancy_block.ColumnValueFilterBlock"
     )
     def test_generate_method_calls_internal_blocks(
         self,
@@ -465,11 +463,13 @@ class TestEvaluateRelevancyBlock:
         )
 
         # Mock the prompt builder to raise an exception
-        with patch.object(
-            block.prompt_builder, "generate", side_effect=Exception("Test error")
+        with (
+            patch.object(
+                block.prompt_builder, "generate", side_effect=Exception("Test error")
+            ),
+            pytest.raises(Exception, match="Test error"),
         ):
-            with pytest.raises(Exception, match="Test error"):
-                block.generate(sample_dataset)
+            block.generate(sample_dataset)
 
     def test_validation_with_empty_dataset(self, test_yaml_config):
         """Test validation with empty dataset."""

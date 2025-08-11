@@ -2,19 +2,19 @@
 """Tests for EvaluateFaithfulnessBlock."""
 
 # Standard
+from unittest.mock import MagicMock, patch
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
 
 # Third Party
 from datasets import Dataset
-import pytest
 
 # First Party
-from sdg_hub.blocks.evaluation.evaluate_faithfulness_block import (
+from sdg_hub import BlockRegistry
+from sdg_hub.core.blocks.evaluation.evaluate_faithfulness_block import (
     EvaluateFaithfulnessBlock,
 )
-from sdg_hub.blocks.registry import BlockRegistry
+import pytest
 
 
 class TestEvaluateFaithfulnessBlock:
@@ -80,7 +80,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -93,7 +92,6 @@ class TestEvaluateFaithfulnessBlock:
         assert block.output_cols == [
             "faithfulness_explanation",
             "faithfulness_judgment",
-            "filtered_faithfulness",
         ]
         assert block.model == "hosted_vllm/meta-llama/Llama-3.3-70B-Instruct"
         assert block.filter_value == "YES"  # default
@@ -113,7 +111,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="openai/gpt-4",
@@ -147,7 +144,6 @@ class TestEvaluateFaithfulnessBlock:
                 output_cols=[
                     "faithfulness_explanation",
                     "faithfulness_judgment",
-                    "filtered_faithfulness",
                 ],
                 prompt_config_path=test_yaml_config,
                 model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -175,7 +171,6 @@ class TestEvaluateFaithfulnessBlock:
                 output_cols=[
                     "faithfulness_explanation",
                     "faithfulness_judgment",
-                    "filtered_faithfulness",
                 ],
                 prompt_config_path="/nonexistent/path.yaml",
                 model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -189,7 +184,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -208,7 +202,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -234,7 +227,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -248,11 +240,13 @@ class TestEvaluateFaithfulnessBlock:
         with pytest.raises(ValueError, match="All internal blocks must be initialized"):
             block._validate_custom(sample_dataset)
 
-    @patch("sdg_hub.blocks.evaluation.evaluate_faithfulness_block.LLMChatBlock")
-    @patch("sdg_hub.blocks.evaluation.evaluate_faithfulness_block.PromptBuilderBlock")
-    @patch("sdg_hub.blocks.evaluation.evaluate_faithfulness_block.TextParserBlock")
+    @patch("sdg_hub.core.blocks.evaluation.evaluate_faithfulness_block.LLMChatBlock")
     @patch(
-        "sdg_hub.blocks.evaluation.evaluate_faithfulness_block.ColumnValueFilterBlock"
+        "sdg_hub.core.blocks.evaluation.evaluate_faithfulness_block.PromptBuilderBlock"
+    )
+    @patch("sdg_hub.core.blocks.evaluation.evaluate_faithfulness_block.TextParserBlock")
+    @patch(
+        "sdg_hub.core.blocks.evaluation.evaluate_faithfulness_block.ColumnValueFilterBlock"
     )
     def test_generate_method_calls_internal_blocks(
         self,
@@ -320,7 +314,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -336,9 +329,9 @@ class TestEvaluateFaithfulnessBlock:
         mock_parser_instance.generate.assert_called_once()
         mock_filter_instance.generate.assert_called_once()
 
-        # Verify result contains the filtered_faithfulness column
-        assert "filtered_faithfulness" in result.column_names
-        assert all(result["filtered_faithfulness"])  # Should all be True
+        # Verify result contains expected columns
+        assert "faithfulness_explanation" in result.column_names
+        assert "faithfulness_judgment" in result.column_names
 
     def test_get_internal_blocks_info(self, test_yaml_config):
         """Test get_internal_blocks_info method."""
@@ -348,7 +341,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -377,7 +369,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -393,7 +384,6 @@ class TestEvaluateFaithfulnessBlock:
         assert info["output_cols"] == [
             "faithfulness_explanation",
             "faithfulness_judgment",
-            "filtered_faithfulness",
         ]
         assert info["model"] == "hosted_vllm/meta-llama/Llama-3.3-70B-Instruct"
 
@@ -405,7 +395,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -425,7 +414,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -470,7 +458,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",
@@ -479,11 +466,13 @@ class TestEvaluateFaithfulnessBlock:
         )
 
         # Mock the prompt builder to raise an exception
-        with patch.object(
-            block.prompt_builder, "generate", side_effect=Exception("Test error")
+        with (
+            patch.object(
+                block.prompt_builder, "generate", side_effect=Exception("Test error")
+            ),
+            pytest.raises(Exception, match="Test error"),
         ):
-            with pytest.raises(Exception, match="Test error"):
-                block.generate(sample_dataset)
+            block.generate(sample_dataset)
 
     def test_validation_with_empty_dataset(self, test_yaml_config):
         """Test validation with empty dataset."""
@@ -493,7 +482,6 @@ class TestEvaluateFaithfulnessBlock:
             output_cols=[
                 "faithfulness_explanation",
                 "faithfulness_judgment",
-                "filtered_faithfulness",
             ],
             prompt_config_path=test_yaml_config,
             model="hosted_vllm/meta-llama/Llama-3.3-70B-Instruct",

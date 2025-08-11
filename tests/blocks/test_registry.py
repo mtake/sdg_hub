@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for the enhanced BlockRegistry implementation."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from io import StringIO
+# Standard
+from unittest.mock import patch
 
-from sdg_hub.blocks.registry import BlockRegistry, BlockMetadata
-from sdg_hub.blocks.base import BaseBlock
+# Third Party
 from datasets import Dataset
+
+# First Party
+from sdg_hub import BaseBlock, BlockRegistry
+from sdg_hub.core.blocks.registry import BlockMetadata
+import pytest
 
 
 class MockBlock(BaseBlock):
@@ -67,18 +70,20 @@ class TestBlockRegistry:
         """Save current registry state and clear for isolated testing."""
         # Save current state
         self._saved_metadata = BlockRegistry._metadata.copy()
-        self._saved_categories = {k: v.copy() for k, v in BlockRegistry._categories.items()}
-        
+        self._saved_categories = {
+            k: v.copy() for k, v in BlockRegistry._categories.items()
+        }
+
         # Clear for isolated testing
         BlockRegistry._metadata.clear()
         BlockRegistry._categories.clear()
-    
+
     def teardown_method(self):
         """Restore registry state after each test."""
         # Restore saved state
         BlockRegistry._metadata.clear()
         BlockRegistry._metadata.update(self._saved_metadata)
-        
+
         BlockRegistry._categories.clear()
         BlockRegistry._categories.update(self._saved_categories)
 
@@ -104,7 +109,7 @@ class TestBlockRegistry:
 
     def test_register_deprecated_block(self):
         """Test registering a deprecated block."""
-        with patch("sdg_hub.blocks.registry.logger") as mock_logger:
+        with patch("sdg_hub.core.blocks.registry.logger") as mock_logger:
 
             @BlockRegistry.register(
                 "OldBlock", "test", deprecated=True, replacement="NewBlock"
@@ -140,12 +145,21 @@ class TestBlockRegistry:
     def test_register_missing_generate_method(self):
         """Test that class without generate method raises ValueError."""
         # This test is for when BaseBlock is not available and we fall back to checking generate method
-        with patch('builtins.__import__', side_effect=ImportError("BaseBlock not available")):
-            with pytest.raises(ValueError, match="must implement 'generate' method"):
+        original_import = __import__
 
-                @BlockRegistry.register("InvalidBlock", "test")
-                class InvalidBlock:
-                    pass
+        def mock_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if "base" in name:
+                raise ImportError("BaseBlock not available")
+            return original_import(name, globals, locals, fromlist, level)
+
+        with (
+            patch("builtins.__import__", side_effect=mock_import),
+            pytest.raises(ValueError, match="must implement 'generate' method"),
+        ):
+
+            @BlockRegistry.register("InvalidBlock", "test")
+            class InvalidBlock:
+                pass
 
     def test_get_block_class_success(self):
         """Test successfully retrieving a block class."""
@@ -183,7 +197,7 @@ class TestBlockRegistry:
 
     def test_get_block_class_deprecated_warning(self):
         """Test warning when retrieving deprecated block."""
-        with patch("sdg_hub.blocks.registry.logger") as mock_logger:
+        with patch("sdg_hub.core.blocks.registry.logger") as mock_logger:
 
             @BlockRegistry.register(
                 "OldBlock", "test", deprecated=True, replacement="NewBlock"
@@ -292,7 +306,7 @@ class TestBlockRegistry:
 
     def test_print_blocks_empty_registry(self):
         """Test printing blocks when registry is empty."""
-        with patch("sdg_hub.blocks.registry.console") as mock_console:
+        with patch("sdg_hub.core.blocks.registry.console") as mock_console:
             BlockRegistry.show()
             mock_console.print.assert_called_once_with(
                 "[yellow]No blocks registered yet.[/yellow]"
@@ -313,7 +327,7 @@ class TestBlockRegistry:
             def generate(self, samples: Dataset, **kwargs) -> Dataset:
                 return samples
 
-        with patch("sdg_hub.blocks.registry.console") as mock_console:
+        with patch("sdg_hub.core.blocks.registry.console") as mock_console:
             BlockRegistry.show()
 
             # Check that console.print was called (for table and summary)
@@ -326,15 +340,16 @@ class TestBlockRegistry:
 
     def test_fallback_validation_without_baseblock(self):
         """Test validation fallback when BaseBlock is not available."""
+
         # Mock the import to raise ImportError for BaseBlock
-        def mock_import(name, *args, **kwargs):
-            if 'base' in name:
+        original_import = __import__
+
+        def mock_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if "base" in name:
                 raise ImportError("BaseBlock not available")
-            # For other imports, use the real import
-            import importlib
-            return importlib.import_module(name)
-        
-        with patch('builtins.__import__', side_effect=mock_import):
+            return original_import(name, globals, locals, fromlist, level)
+
+        with patch("builtins.__import__", side_effect=mock_import):
             # Should work with generate method
             @BlockRegistry.register("OldStyleBlock", "test")
             class OldStyleBlock:

@@ -3,10 +3,10 @@ from unittest.mock import patch
 
 # Third Party
 from datasets import Dataset
-import pytest
 
 # First Party
-from sdg_hub.blocks.llm import TextParserBlock
+from sdg_hub.core.blocks.llm import TextParserBlock
+import pytest
 
 
 @pytest.fixture
@@ -213,7 +213,7 @@ def test_generate_multiple_matches_per_input(postprocessing_block_multi_column):
 def test_generate_missing_input_column(postprocessing_block):
     """Test that missing input column is handled by BaseBlock validation."""
     # First Party
-    from sdg_hub.utils.error_handling import MissingColumnError
+    from sdg_hub.core.utils.error_handling import MissingColumnError
 
     data = [{"other_column": "some text"}]
     dataset = Dataset.from_list(data)
@@ -667,7 +667,7 @@ def test_enhanced_error_handling_invalid_input_data():
     for data in test_cases:
         dataset = Dataset.from_list(data)
 
-        with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
+        with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
             result = block.generate(dataset)
 
             # Should log warnings for invalid data
@@ -692,8 +692,8 @@ def test_enhanced_logging_for_parsing_failures():
     data = [{"raw_output": "No tags in this text"}]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
-        result = block.generate(dataset)
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
+        block.generate(dataset)
 
         # Should log warning about parsing failure
         mock_logger.warning.assert_called()
@@ -707,7 +707,7 @@ def test_enhanced_logging_missing_input_column():
     # BaseBlock should handle missing column validation, so this should raise an error
     # during validation, not during generate()
     # First Party
-    from sdg_hub.utils.error_handling import MissingColumnError
+    from sdg_hub.core.utils.error_handling import MissingColumnError
 
     block = TextParserBlock(
         block_name="test_block",
@@ -721,7 +721,7 @@ def test_enhanced_logging_missing_input_column():
 
     # BaseBlock should validate and raise MissingColumnError
     with pytest.raises(MissingColumnError):
-        result = block(dataset)  # Use __call__ to trigger validation
+        block(dataset)  # Use __call__ to trigger validation
 
 
 def test_enhanced_logging_regex_parsing():
@@ -736,8 +736,8 @@ def test_enhanced_logging_regex_parsing():
     data = [{"raw_output": "Answer: test response"}]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
-        result = block.generate(dataset)
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
+        block.generate(dataset)
 
         # Should log debug info about matches found
         mock_logger.debug.assert_called()
@@ -759,8 +759,8 @@ def test_enhanced_logging_tag_parsing():
     data = [{"raw_output": "<answer>test response</answer>"}]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
-        result = block.generate(dataset)
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
+        block.generate(dataset)
 
         # Should log debug info about tag parsing
         mock_logger.debug.assert_called()
@@ -875,7 +875,7 @@ def test_generate_with_empty_list_input():
     data = [{"raw_output": []}]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
         result = block.generate(dataset)
 
         # Should log warning about empty list
@@ -908,7 +908,7 @@ def test_generate_with_mixed_valid_invalid_list_items():
     ]
     dataset = Dataset.from_list(data_with_empty)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
         result = block.generate(dataset)
 
         # Should process only the 2 valid responses
@@ -944,7 +944,7 @@ def test_generate_with_list_input_parsing_failures():
     ]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
         result = block.generate(dataset)
 
         # Should process only the 2 parseable responses
@@ -1016,7 +1016,7 @@ def test_generate_with_invalid_input_type():
     data = [{"raw_output": {"not": "valid"}}]
     dataset = Dataset.from_list(data)
 
-    with patch("sdg_hub.blocks.llm.text_parser_block.logger") as mock_logger:
+    with patch("sdg_hub.core.blocks.llm.text_parser_block.logger") as mock_logger:
         result = block.generate(dataset)
 
         # Should log warning about invalid type
