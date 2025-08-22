@@ -29,13 +29,13 @@ nest_asyncio.apply()
 
 # %%
 # data_name = ""
-# data_name = "teigaku-genzei"
+data_name = "teigaku-genzei"
 # data_name = "teigaku-genzei-ibm-v0"
 # data_name = "teigaku-genzei-ibm-v2"
 # data_name = "teigaku-genzei-ibm-v3"
 # data_name = "teigaku-genzei-ibm-v4"
 # data_name = "teigaku-genzei-ibm-v5"
-data_name = "teigaku-genzei-ibm-v6"
+# data_name = "teigaku-genzei-ibm-v6"
 # data_name = "ibm-newsroom"
 # data_name = "ibm-newsroom-en"
 # data_name = "jfe-technical-report"
@@ -49,8 +49,8 @@ elif data_name.startswith(("teigaku-genzei", "ibm-newsroom", "jfe-technical-repo
 else:
     data_lang = ""
 
-# repeat_times = 1
-repeat_times = 5
+repeat_times = 1
+# repeat_times = 5
 
 # %%
 sdg_demo_output = "sdg_demo_output"
