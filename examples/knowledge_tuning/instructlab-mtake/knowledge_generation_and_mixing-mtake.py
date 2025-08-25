@@ -313,7 +313,7 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 # %%
 # checkpoint_dir = None
 # save_freq = None
-checkpoint_dir = f"{output_dir}/ckpt"
+checkpoint_dir = f"{output_dir}_ckpt"
 save_freq = 1000
 
 # %%
