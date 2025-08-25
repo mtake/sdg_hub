@@ -307,9 +307,18 @@ ds = ds.add_column("seed_id", list(range(len(ds))))
 # %%
 print(f"Loaded {len(ds)} seed data", flush=True)
 
+# %% [markdown]
+# Configure checkpointing
+
+# %%
+# checkpoint_dir = None
+# save_freq = None
+checkpoint_dir = f"{output_dir}/ckpt"
+save_freq = 1000
+
 # %%
 # Generate data
-generated_data = flow.generate(ds)
+generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq)
 
 # %% [markdown]
 # ### Converting the generated data into training format
