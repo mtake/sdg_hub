@@ -314,7 +314,8 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 # checkpoint_dir = None
 # save_freq = None
 checkpoint_dir = f"{output_dir}_ckpt"
-save_freq = 1000
+# save_freq = 1000  # Request timed out. - timeout value=600.0, time taken=1802.91 seconds
+save_freq = 100
 
 # %%
 # Generate data
