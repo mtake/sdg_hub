@@ -160,7 +160,7 @@ class TestFlow:
             yaml.dump(flow_config, f)
 
         # Mock the block creation
-        with patch("sdg_hub.core.flow.base.BlockRegistry.get") as mock_get:
+        with patch("sdg_hub.core.flow.base.BlockRegistry._get") as mock_get:
             mock_block_class = Mock()
             mock_block_instance = self.create_mock_block("test_block")
             mock_block_class.return_value = mock_block_instance
@@ -216,7 +216,7 @@ class TestFlow:
             yaml.dump(flow_config, f)
 
         # Mock the block creation
-        with patch("sdg_hub.core.flow.base.BlockRegistry.get") as mock_get:
+        with patch("sdg_hub.core.flow.base.BlockRegistry._get") as mock_get:
             mock_block_class = Mock()
             mock_block_instance = self.create_mock_block("test_block")
             mock_block_class.return_value = mock_block_instance
@@ -1121,3 +1121,157 @@ class TestFlow:
         with open(checkpoint_files[0], "r") as f:
             checkpoint_data = json.loads(f.readline())
             assert "final" in checkpoint_data
+
+    def test_create_block_from_config_block_not_found(self):
+        """Test _create_block_from_config when block type is not found in registry."""
+        # Standard
+        from pathlib import Path
+
+        # Mock BlockRegistry to simulate available blocks
+        with (
+            patch("sdg_hub.core.flow.base.BlockRegistry._get") as mock_get,
+            patch(
+                "sdg_hub.core.flow.base.BlockRegistry.list_blocks"
+            ) as mock_list_blocks,
+        ):
+            # Configure mocks
+            mock_get.side_effect = KeyError("Block 'nonexistent_block' not found")
+            mock_list_blocks.return_value = [
+                "llm_chat",
+                "prompt_builder",
+                "text_concat",
+                "rename_columns",
+                "column_value_filter",
+            ]
+
+            # Create block config with nonexistent block type
+            block_config = {
+                "block_type": "nonexistent_block",
+                "block_config": {"param": "value"},
+            }
+            yaml_dir = Path(self.temp_dir)
+
+            # Test that FlowValidationError is raised with helpful message
+            with pytest.raises(FlowValidationError) as exc_info:
+                Flow._create_block_from_config(block_config, yaml_dir)
+
+            error_message = str(exc_info.value)
+
+            # Verify error message contains expected information
+            assert (
+                "Block type 'nonexistent_block' not found in registry" in error_message
+            )
+            assert "Available blocks:" in error_message
+
+            # Verify all available blocks are listed in the error message
+            assert "llm_chat" in error_message
+            assert "prompt_builder" in error_message
+            assert "text_concat" in error_message
+            assert "rename_columns" in error_message
+            assert "column_value_filter" in error_message
+
+            # Verify the blocks are flattened from all categories
+            mock_list_blocks.assert_called_once_with()
+            mock_get.assert_called_once_with("nonexistent_block")
+
+    def test_generate_with_max_concurrency_limit(self):
+        """Test that max_concurrency limits concurrent requests."""
+        # Standard
+        import asyncio
+
+        active, max_concurrent = [0], [0]
+
+        async def mock_acreate(*args, **kwargs):
+            active[0] += 1
+            max_concurrent[0] = max(max_concurrent[0], active[0])
+            await asyncio.sleep(0.01)
+            active[0] -= 1
+            return "response"
+
+        # Use real LLMChatBlock
+        # First Party
+        from sdg_hub.core.blocks.llm.llm_chat_block import LLMChatBlock
+
+        messages_data = [[{"role": "user", "content": f"test {i}"}] for i in range(10)]
+        dataset = Dataset.from_dict({"messages": messages_data})
+
+        llm_block = LLMChatBlock(
+            block_name="llm_block",
+            input_cols="messages",
+            output_cols="output",
+            model="test/model",
+            async_mode=True,
+        )
+        llm_block.client_manager._acreate_single = mock_acreate
+
+        flow = Flow(blocks=[llm_block], metadata=self.test_metadata)
+        flow._model_config_set = True
+
+        flow.generate(dataset, max_concurrency=3)
+        assert max_concurrent[0] <= 3
+
+    def test_generate_without_concurrency_limit(self):
+        """Test that without max_concurrency, all requests run concurrently."""
+        # Standard
+        import asyncio
+
+        active, max_concurrent = [0], [0]
+
+        async def mock_acreate(*args, **kwargs):
+            active[0] += 1
+            max_concurrent[0] = max(max_concurrent[0], active[0])
+            await asyncio.sleep(0.01)
+            active[0] -= 1
+            return "response"
+
+        # Use real LLMChatBlock instead of MockBlock
+        # First Party
+        from sdg_hub.core.blocks.llm.llm_chat_block import LLMChatBlock
+
+        # Create dataset with messages format (required for LLMChatBlock)
+        messages_data = [[{"role": "user", "content": f"test {i}"}] for i in range(5)]
+        dataset = Dataset.from_dict({"messages": messages_data})
+
+        llm_block = LLMChatBlock(
+            block_name="llm_block",
+            input_cols="messages",
+            output_cols="output",
+            model="test/model",
+            async_mode=True,
+        )
+        llm_block.client_manager._acreate_single = mock_acreate
+
+        flow = Flow(blocks=[llm_block], metadata=self.test_metadata)
+        flow._model_config_set = True
+
+        flow.generate(dataset)
+        assert max_concurrent[0] == 5
+
+    def test_generate_max_concurrency_validation(self):
+        """Test that max_concurrency parameter validation works correctly."""
+        # Third Party
+        from datasets import Dataset
+
+        # First Party
+        from sdg_hub.core.utils.error_handling import FlowValidationError
+
+        dataset = Dataset.from_dict(
+            {"messages": [[{"role": "user", "content": "test"}]]}
+        )
+        flow = Flow(blocks=[], metadata=self.test_metadata)
+
+        # Test invalid type
+        with pytest.raises(FlowValidationError, match="max_concurrency must be an int"):
+            flow.generate(dataset, max_concurrency=3.5)
+
+        # Test zero value
+        with pytest.raises(
+            FlowValidationError, match="max_concurrency must be greater than 0"
+        ):
+            flow.generate(dataset, max_concurrency=0)
+
+        # Test negative value
+        with pytest.raises(
+            FlowValidationError, match="max_concurrency must be greater than 0"
+        ):
+            flow.generate(dataset, max_concurrency=-1)

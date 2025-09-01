@@ -13,18 +13,19 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
+import datasets
 import yaml
 
 # Local
 from ..blocks.base import BaseBlock
 from ..blocks.registry import BlockRegistry
-from ..utils.datautils import safe_concatenate_with_validation
+from ..utils.datautils import safe_concatenate_with_validation, validate_no_duplicates
 from ..utils.error_handling import EmptyDatasetError, FlowValidationError
 from ..utils.logger_config import setup_logger
 from ..utils.path_resolution import resolve_path
 from ..utils.yaml_utils import save_flow_yaml
 from .checkpointer import FlowCheckpointer
-from .metadata import FlowMetadata, FlowParameter
+from .metadata import DatasetRequirements, FlowMetadata, FlowParameter
 from .migration import FlowMigration
 from .validation import FlowValidator
 
@@ -306,13 +307,11 @@ class Flow(BaseModel):
 
         # Get block class from registry
         try:
-            block_class = BlockRegistry.get(block_type_name)
+            block_class = BlockRegistry._get(block_type_name)
         except KeyError as exc:
             # Get all available blocks from all categories
-            all_blocks = BlockRegistry.all()
-            available_blocks = ", ".join(
-                [block for blocks in all_blocks.values() for block in blocks]
-            )
+            all_blocks = BlockRegistry.list_blocks()
+            available_blocks = ", ".join(all_blocks)
             raise FlowValidationError(
                 f"Block type '{block_type_name}' not found in registry. "
                 f"Available blocks: {available_blocks}"
@@ -357,6 +356,7 @@ class Flow(BaseModel):
         runtime_params: Optional[dict[str, dict[str, Any]]] = None,
         checkpoint_dir: Optional[str] = None,
         save_freq: Optional[int] = None,
+        max_concurrency: Optional[int] = None,
     ) -> Dataset:
         """Execute the flow blocks in sequence to generate data.
 
@@ -378,6 +378,9 @@ class Flow(BaseModel):
         save_freq : Optional[int], optional
             Number of completed samples after which to save a checkpoint.
             If None, only saves final results when checkpointing is enabled.
+        max_concurrency : Optional[int], optional
+            Maximum number of concurrent requests across all blocks.
+            Controls async request concurrency to prevent overwhelming servers.
 
         Returns
         -------
@@ -397,12 +400,28 @@ class Flow(BaseModel):
                 f"save_freq must be greater than 0, got {save_freq}"
             )
 
+        # Validate max_concurrency parameter
+        if max_concurrency is not None:
+            # Explicitly reject boolean values (bool is a subclass of int in Python)
+            if isinstance(max_concurrency, bool) or not isinstance(
+                max_concurrency, int
+            ):
+                raise FlowValidationError(
+                    f"max_concurrency must be an int, got {type(max_concurrency).__name__}"
+                )
+            if max_concurrency <= 0:
+                raise FlowValidationError(
+                    f"max_concurrency must be greater than 0, got {max_concurrency}"
+                )
+
         # Validate preconditions
         if not self.blocks:
             raise FlowValidationError("Cannot generate with empty flow")
 
         if len(dataset) == 0:
             raise EmptyDatasetError("Input dataset is empty")
+
+        validate_no_duplicates(dataset)
 
         # Check if model configuration has been set for flows with LLM blocks
         llm_blocks = self._detect_llm_blocks()
@@ -419,6 +438,10 @@ class Flow(BaseModel):
             raise FlowValidationError(
                 "Dataset validation failed:\n" + "\n".join(dataset_errors)
             )
+
+        # Log concurrency control if specified
+        if max_concurrency is not None:
+            logger.info(f"Using max_concurrency={max_concurrency} for LLM requests")
 
         # Initialize checkpointer if enabled
         checkpointer = None
@@ -445,6 +468,7 @@ class Flow(BaseModel):
         logger.info(
             f"Starting flow '{self.metadata.name}' v{self.metadata.version} "
             f"with {len(dataset)} samples across {len(self.blocks)} blocks"
+            + (f" (max_concurrency={max_concurrency})" if max_concurrency else "")
         )
 
         # Merge migrated runtime params with provided ones (provided ones take precedence)
@@ -468,7 +492,7 @@ class Flow(BaseModel):
 
                 # Execute all blocks on this chunk
                 processed_chunk = self._execute_blocks_on_dataset(
-                    chunk_dataset, runtime_params
+                    chunk_dataset, runtime_params, max_concurrency
                 )
                 all_processed.append(processed_chunk)
 
@@ -492,7 +516,9 @@ class Flow(BaseModel):
 
         else:
             # Process entire dataset at once
-            final_dataset = self._execute_blocks_on_dataset(dataset, runtime_params)
+            final_dataset = self._execute_blocks_on_dataset(
+                dataset, runtime_params, max_concurrency
+            )
 
             # Save final checkpoint if checkpointing enabled
             if checkpointer:
@@ -515,7 +541,10 @@ class Flow(BaseModel):
         return final_dataset
 
     def _execute_blocks_on_dataset(
-        self, dataset: Dataset, runtime_params: dict[str, dict[str, Any]]
+        self,
+        dataset: Dataset,
+        runtime_params: dict[str, dict[str, Any]],
+        max_concurrency: Optional[int] = None,
     ) -> Dataset:
         """Execute all blocks in sequence on the given dataset.
 
@@ -525,6 +554,8 @@ class Flow(BaseModel):
             Dataset to process through all blocks.
         runtime_params : Dict[str, Dict[str, Any]]
             Runtime parameters for block execution.
+        max_concurrency : Optional[int], optional
+            Maximum concurrency for LLM requests across blocks.
 
         Returns
         -------
@@ -542,6 +573,10 @@ class Flow(BaseModel):
 
             # Prepare block execution parameters
             block_kwargs = self._prepare_block_kwargs(block, runtime_params)
+
+            # Add max_concurrency to block kwargs if provided
+            if max_concurrency is not None:
+                block_kwargs["_flow_max_concurrency"] = max_concurrency
 
             try:
                 # Check if this is a deprecated block and skip validations
@@ -899,6 +934,8 @@ class Flow(BaseModel):
         if len(dataset) == 0:
             raise EmptyDatasetError("Input dataset is empty")
 
+        validate_no_duplicates(dataset)
+
         # Use smaller sample size if dataset is smaller
         actual_sample_size = min(sample_size, len(dataset))
 
@@ -1065,6 +1102,90 @@ class Flow(BaseModel):
             "total_blocks": len(self.blocks),
             "block_names": [block.block_name for block in self.blocks],
         }
+
+    def get_dataset_requirements(self) -> Optional[DatasetRequirements]:
+        """Get the dataset requirements for this flow.
+
+        Returns
+        -------
+        Optional[DatasetRequirements]
+            Dataset requirements object or None if not defined.
+
+        Examples
+        --------
+        >>> flow = Flow.from_yaml("path/to/flow.yaml")
+        >>> requirements = flow.get_dataset_requirements()
+        >>> if requirements:
+        ...     print(f"Required columns: {requirements.required_columns}")
+        """
+        return self.metadata.dataset_requirements
+
+    def get_dataset_schema(self) -> Dataset:
+        """Get an empty dataset with the correct schema for this flow.
+
+        Returns
+        -------
+        Dataset
+            Empty HuggingFace Dataset with the correct schema/features for this flow.
+            Users can add data to this dataset or use it to validate their own dataset schema.
+
+        Examples
+        --------
+        >>> flow = Flow.from_yaml("path/to/flow.yaml")
+        >>> schema_dataset = flow.get_dataset_schema()
+        >>>
+        >>> # Add your data
+        >>> schema_dataset = schema_dataset.add_item({
+        ...     "document": "Your document text",
+        ...     "domain": "Computer Science",
+        ...     "icl_document": "Example document"
+        ... })
+        >>>
+        >>> # Or validate your existing dataset schema
+        >>> my_dataset = Dataset.from_dict(my_data)
+        >>> if my_dataset.features == schema_dataset.features:
+        ...     print("Schema matches!")
+        """
+
+        requirements = self.get_dataset_requirements()
+
+        if requirements is None:
+            # Return empty dataset with no schema requirements
+            return Dataset.from_dict({})
+
+        # Build schema features
+        schema_features = {}
+
+        # Process required columns
+        for col_name in requirements.required_columns:
+            col_type = requirements.column_types.get(col_name, "string")
+            schema_features[col_name] = self._map_column_type_to_feature(col_type)
+
+        # Process optional columns
+        for col_name in requirements.optional_columns:
+            col_type = requirements.column_types.get(col_name, "string")
+            schema_features[col_name] = self._map_column_type_to_feature(col_type)
+
+        # Create empty dataset with the correct features
+        features = datasets.Features(schema_features)
+        empty_data = {col_name: [] for col_name in schema_features.keys()}
+
+        return Dataset.from_dict(empty_data, features=features)
+
+    def _map_column_type_to_feature(self, col_type: str):
+        """Map column type string to HuggingFace feature type."""
+        # Map common type names to HuggingFace types
+        if col_type in ["str", "string", "text"]:
+            return datasets.Value("string")
+        elif col_type in ["int", "integer"]:
+            return datasets.Value("int64")
+        elif col_type in ["float", "number"]:
+            return datasets.Value("float64")
+        elif col_type in ["bool", "boolean"]:
+            return datasets.Value("bool")
+        else:
+            # Default to string for unknown types
+            return datasets.Value("string")
 
     def print_info(self) -> None:
         """
