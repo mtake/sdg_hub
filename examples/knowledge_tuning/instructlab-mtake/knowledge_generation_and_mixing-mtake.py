@@ -316,11 +316,16 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 1000  # Request timed out. - timeout value=600.0, time taken=1802.91 seconds
 # save_freq = 100  # Runs at 30 minutes per chunk. Fails too often.
-save_freq = 10
+# save_freq = 10
+# @@@ahoaho XXX
+save_freq = 100
+max_concurrency = 10
 
 # %%
 # Generate data
-generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq)
+# @@@ahoaho XXX
+# generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq)
+generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq, max_concurrency=max_concurrency)
 
 # %% [markdown]
 # ### Converting the generated data into training format

@@ -48,7 +48,6 @@ blocks:
       input_cols: [document, document_outline]
       output_cols: summary_prompt
       prompt_config_path: detailed_summary_ja.yaml
-      format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
@@ -72,7 +71,6 @@ blocks:
       input_cols: [document, document_outline, domain]
       output_cols: atomic_facts_prompt
       prompt_config_path: atomic_facts_ja.yaml
-      format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
@@ -96,7 +94,6 @@ blocks:
       input_cols: [document, document_outline]
       output_cols: extractive_summary_prompt
       prompt_config_path: extractive_summary_ja.yaml
-      format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
@@ -131,7 +128,6 @@ blocks:
       input_cols: [domain, document, document_outline, icl_document, icl_query_1, icl_response_1, icl_query_2, icl_response_2, icl_query_3, icl_response_3]
       output_cols: knowledge_generation_prompt
       prompt_config_path: generate_questions_responses_ja.yaml
-      format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
@@ -159,7 +155,6 @@ blocks:
       filter_value: "YES"
       operation: eq
       async_mode: true
-      format_as_messages: true
       start_tags: ["[Start of Explanation]", "[Start of Answer]"]
       end_tags: ["[End of Explanation]", "[End of Answer]"]
 
@@ -174,7 +169,6 @@ blocks:
       convert_dtype: float
       max_tokens: 2048
       async_mode: true
-      format_as_messages: true
       start_tags: ["[Start of Feedback]", "[Start of Score]"]
       end_tags: ["[End of Feedback]", "[End of Score]"]
 
@@ -189,6 +183,5 @@ blocks:
       convert_dtype: float
       max_tokens: 2048
       async_mode: true
-      format_as_messages: true
       start_tags: ["[Start of Explanation]", "[Start of Rating]"]
       end_tags: ["[End of Explanation]", "[End of Rating]"]
