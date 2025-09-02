@@ -260,7 +260,7 @@ flow.set_model_config(
     model=model_name,
     api_base=get_base_url(model_name),
     api_key="EMPTY",
-    timeout=1800,
+    timeout=3600,
     extra_headers=default_headers,
 )
 
@@ -314,18 +314,16 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 # %%
 # checkpoint_dir = None
 # save_freq = None
+# max_concurrency = None
 checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 1000  # Request timed out. - timeout value=600.0, time taken=1802.91 seconds
-# save_freq = 100  # Runs at 30 minutes per chunk. Fails too often.
-# save_freq = 10
-# @@@ahoaho XXX
-save_freq = 100
-max_concurrency = 10
+save_freq = 100  # Runs at 30 minutes per chunk. Fails often.
+# save_freq = 10  # Creates 2000+ checkpoints
+max_concurrency = 30
+# max_concurrency = 10
 
 # %%
 # Generate data
-# @@@ahoaho XXX
-# generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq)
 generated_data = flow.generate(ds, checkpoint_dir=checkpoint_dir, save_freq=save_freq, max_concurrency=max_concurrency)
 
 # %% [markdown]
