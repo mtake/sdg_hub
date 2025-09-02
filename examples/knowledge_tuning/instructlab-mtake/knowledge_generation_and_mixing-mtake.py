@@ -260,6 +260,7 @@ flow.set_model_config(
     model=model_name,
     api_base=get_base_url(model_name),
     api_key="EMPTY",
+    timeout=1800,
     extra_headers=default_headers,
 )
 
