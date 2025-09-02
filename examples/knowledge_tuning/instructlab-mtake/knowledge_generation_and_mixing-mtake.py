@@ -322,8 +322,8 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 20
 # max_concurrency = 10
 
-save_freq = 100
-max_concurrency = 50
+save_freq = 1000
+max_concurrency = 30
 
 # works but slow (~10 hours)
 # save_freq = 10  # Creates 2000+ checkpoints
