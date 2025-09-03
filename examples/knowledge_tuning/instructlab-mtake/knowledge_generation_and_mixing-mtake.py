@@ -25,7 +25,16 @@ import nest_asyncio
 nest_asyncio.apply()  
 
 # %% [markdown]
-# ### Configure Seed Data
+# #### Configure timestamp
+
+# %%
+from datetime import datetime
+
+now = datetime.now()
+timestamp = now.strftime('%Y%m%d-%H%M%S')
+
+# %% [markdown]
+# #### Configure seed data
 
 # %%
 # data_name = ""
@@ -85,6 +94,9 @@ print(f"Available flows: {flows}")
 # You can also search the flows by tag
 qa_flows = FlowRegistry.search_flows(tag="question-generation")
 print(f"QA flows: {qa_flows}")
+
+# %% [markdown]
+# #### Determine the generation flow to use
 
 # %%
 # We will use the "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning" flow.
@@ -216,7 +228,8 @@ elif use_mixtral:
     model_name = mixtral_model_name
     short_name = mixtral_short_name
 
-output_dir = f"{output_dir_prefix}_{short_name}"
+# output_dir = f"{output_dir_prefix}_{short_name}"
+output_dir = f"{output_dir_prefix}_{short_name}_{timestamp}"
 
 # %%
 import os
