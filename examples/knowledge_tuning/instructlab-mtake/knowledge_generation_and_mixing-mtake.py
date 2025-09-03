@@ -315,28 +315,28 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 # checkpoint_dir = None
 # save_freq = None  # Save the last checkpoint when everything is finished. Not useful.
 # max_concurrency = None
+
 checkpoint_dir = f"{output_dir}_ckpt"
+
+# See https://github.com/mtake/sdg_hub/blob/main/docs/blocks/llm-blocks.md#async-processing--concurrency-control
+
 # save_freq = 1000  # Request timed out. - timeout value=600.0, time taken=1802.91 seconds
 # save_freq = 100  # Creates 200 checkpoints
 # save_freq = 10  # Creates 2000+ checkpoints
 # max_concurrency = 20
 # max_concurrency = 10
 
-# sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00052" not found
+# MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00054" not found
 # save_freq = 1000
 # max_concurrency = 30
 
-save_freq = 1000
+# MEM=100G, finished 20344 requests in 7.5 hrs
+save_freq = 100
 max_concurrency = 30
 
-# finished 20344 requests in 7.5 hrs
-# save_freq = 100
-# max_concurrency = 30
-
-# works but slow (~10 hours)
-# save_freq = 10  # Creates 2000+ checkpoints
+# MEM=100G, works but slow (~10 hours)
+# save_freq = 10
 # max_concurrency = 20
-
 
 # %%
 # Generate data
