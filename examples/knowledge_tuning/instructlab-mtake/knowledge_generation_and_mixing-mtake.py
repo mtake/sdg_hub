@@ -343,12 +343,16 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 1000
 # max_concurrency = 30
 
-# MEM=100G, finished 20344 requests in 7.5 hrs
+# MEM=100G, Finished in 7.5 hours. 20344 requests. 18347 QA pairs
 # save_freq = 100
 # max_concurrency = 30
 
+# MEM=100G, Finished in 14.0 hours. 20424 requests. 18449 QA pairs
+# save_freq = 100
+# max_concurrency = None
+
 # MEM=100G, WIP
-save_freq = 100
+save_freq = None
 max_concurrency = None
 
 # MEM=100G, works but slow (~10 hours)
