@@ -351,9 +351,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 100
 # max_concurrency = None
 
+# MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00062" not found
+# save_freq = None
+# max_concurrency = None
+
 # MEM=100G, WIP
 save_freq = None
-max_concurrency = None
+max_concurrency = 30
 
 # MEM=100G, works but slow (~10 hours)
 # save_freq = 10
