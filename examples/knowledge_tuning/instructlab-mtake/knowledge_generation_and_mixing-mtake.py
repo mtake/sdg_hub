@@ -96,6 +96,14 @@ qa_flows = FlowRegistry.search_flows(tag="question-generation")
 print(f"QA flows: {qa_flows}")
 
 # %% [markdown]
+# #### Configure processing mode
+
+# %%
+# @@@ahoaho XXX
+async_mode = True  # original
+# async_mode = False
+
+# %% [markdown]
 # #### Determine the generation flow to use
 
 # %%
@@ -107,6 +115,16 @@ for qa_flow in qa_flows:
     print(f"XXX qa_flow: {qa_flow}")
     flow_name = qa_flow["name"]
     metadata = FlowRegistry.get_flow_metadata(flow_name)
+
+    # ahoaho XXX
+    has_synchronous_processing = "synchronous-processing" in metadata.tags
+    if async_mode:
+        if has_synchronous_processing:
+            continue
+    else:
+        if not has_synchronous_processing:
+            continue
+
     has_japanese = "japanese" in metadata.tags
     if data_lang == "ja":
         if has_japanese:
