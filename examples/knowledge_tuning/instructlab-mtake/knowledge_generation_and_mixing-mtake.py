@@ -339,37 +339,33 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 20
 # max_concurrency = 10
 
-# MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00054" not found
-# save_freq = 1000
-# max_concurrency = 30
-
-# MEM=100G, Finished in 7.5 hours. 20344 requests, 18347 QA pairs
-# save_freq = 100
-# max_concurrency = 30
-
-# MEM=100G, Finished in 14.0 hours. 20424 requests, 18449 QA pairs
-# save_freq = 100
-# max_concurrency = None
-
 # MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00062" not found
 # save_freq = None
 # max_concurrency = None
 
-# MEM=100G, Finished in 6.9 hours. 20668 requests, 18656 QA pairs
-# save_freq = None
+# MEM=100G, Finished in 14.0 hours, 18449 QA pairs. samples_processed: 20424, checkpoint_counter: 205
+# save_freq = 100
+# max_concurrency = None
+
+# MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00054" not found
+# save_freq = 1000
 # max_concurrency = 30
 
 # MEM=100G, sdg_hub.core.utils.error_handling.FlowValidationError: Block 'gen_detailed_summary' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-predictor-00064" not found
 # save_freq = 500
 # max_concurrency = 30
 
-# MEM=100G, WIP
-save_freq = 200
-max_concurrency = 30
+# MEM=100G, Finished in 8.3 hours, 18524 QA pairs. samples_processed: 20524, checkpoint_counter: 42
+# save_freq = 200
+# max_concurrency = 30
 
-# MEM=100G, works but slow (~10 hours)
-# save_freq = 10
-# max_concurrency = 20
+# MEM=100G, Finished in 7.5 hours, 18347 QA pairs. samples_processed: 20344, checkpoint_counter: 204
+# save_freq = 100
+# max_concurrency = 30
+
+# [v0.2 best] MEM=100G, Finished in 6.9 hours, 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
+save_freq = None
+max_concurrency = 30
 
 # %%
 # Generate data
