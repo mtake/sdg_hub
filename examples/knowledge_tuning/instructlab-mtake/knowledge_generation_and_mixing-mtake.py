@@ -393,9 +393,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 100
 # max_concurrency = 30
 
-# MEM=100G, async_mode: false
-save_freq = 8
-max_concurrency = 8
+# MEM=100G, async_mode: false. Very slow. Killed
+# save_freq = 8
+# max_concurrency = 8
+
+# MEM=100G, async_mode: false. WIP
+save_freq = None
+max_concurrency = None
 
 # %%
 # Generate data
