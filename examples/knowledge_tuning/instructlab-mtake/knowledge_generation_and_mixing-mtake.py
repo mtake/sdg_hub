@@ -100,8 +100,8 @@ print(f"QA flows: {qa_flows}")
 
 # %%
 # @@@ahoaho XXX
-# async_mode = True  # original
-async_mode = False
+async_mode = True  # original
+# async_mode = False  # for test
 
 # %% [markdown]
 # #### Determine the generation flow to use
@@ -115,15 +115,6 @@ for qa_flow in qa_flows:
     print(f"XXX qa_flow: {qa_flow}")
     flow_name = qa_flow["name"]
     metadata = FlowRegistry.get_flow_metadata(flow_name)
-
-    # ahoaho XXX
-    # has_synchronous_processing = "synchronous-processing" in metadata.tags
-    # if async_mode:
-    #     if has_synchronous_processing:
-    #         continue
-    # else:
-    #     if not has_synchronous_processing:
-    #         continue
 
     has_japanese = "japanese" in metadata.tags
     if data_lang == "ja":
@@ -168,8 +159,7 @@ gptoss120_model_name_hf = "openai/gpt-oss-120b"
 llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
 # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
 llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
-# mistral_model_name_hf = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-mistral_model_name_hf = "unsloth/Mistral-Small-3.1-24B-Instruct-2503"
+mistral_model_name_hf = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
 mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 if use_rits:
@@ -291,7 +281,6 @@ flow.set_model_config(
     model=model_name,
     api_base=get_base_url(model_name),
     api_key="EMPTY",
-    # @@@ahoaho XXX
     async_mode=async_mode,
     timeout=3600,
     extra_headers=default_headers,
@@ -384,11 +373,15 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 30
 
 # [v0.2 best] MEM=100G, Finished in 6.9 hours, 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
-# -n 64, MEM=200G, async_mode: false. WIP
+# save_freq = None
+# max_concurrency = 30
+
+# MEM=100G, WIP
 save_freq = None
-max_concurrency = 30
+max_concurrency = 40
 
 # MEM=100G, async_mode: false. Very slow. Killed
+# -n 64, MEM=200G, async_mode: false. Very slow. Killed
 # save_freq = None
 # max_concurrency = 30
 
