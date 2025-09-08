@@ -100,8 +100,8 @@ print(f"QA flows: {qa_flows}")
 
 # %%
 # @@@ahoaho XXX
-async_mode = True  # original
-# async_mode = False
+# async_mode = True  # original
+async_mode = False
 
 # %% [markdown]
 # #### Determine the generation flow to use
@@ -382,6 +382,10 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 30
 
 # [v0.2 best] MEM=100G, Finished in 6.9 hours, 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
+# save_freq = None
+# max_concurrency = 30
+
+# MEM=100G, async_mode: false, WIP
 save_freq = None
 max_concurrency = 30
 
