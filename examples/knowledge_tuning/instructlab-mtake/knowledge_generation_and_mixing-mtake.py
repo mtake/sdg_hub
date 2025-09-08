@@ -117,13 +117,13 @@ for qa_flow in qa_flows:
     metadata = FlowRegistry.get_flow_metadata(flow_name)
 
     # ahoaho XXX
-    has_synchronous_processing = "synchronous-processing" in metadata.tags
-    if async_mode:
-        if has_synchronous_processing:
-            continue
-    else:
-        if not has_synchronous_processing:
-            continue
+    # has_synchronous_processing = "synchronous-processing" in metadata.tags
+    # if async_mode:
+    #     if has_synchronous_processing:
+    #         continue
+    # else:
+    #     if not has_synchronous_processing:
+    #         continue
 
     has_japanese = "japanese" in metadata.tags
     if data_lang == "ja":
@@ -179,7 +179,7 @@ if use_rits:
     gptoss120_model_name = "hosted_vllm/openai/gpt-oss-120b"
     llama3_model_name = "hosted_vllm/meta-llama/llama-3-3-70b-instruct"
     llama4_model_name = "hosted_vllm/meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-    mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+    mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.2-24B-Instruct-2506"
     mixtral_model_name = "hosted_vllm/mistralai/mixtral-8x7B-instruct-v0.1"
 else:
     # Served model name (self hosting via vLLM)
@@ -268,7 +268,7 @@ if use_rits:
     model_dict[gptoss120_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
     model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
     model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
-    model_dict[mistral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-1-24b-2503"
+    model_dict[mistral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
     model_dict[mixtral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 else:
     default_headers: dict[str, str] = {}
@@ -291,6 +291,8 @@ flow.set_model_config(
     model=model_name,
     api_base=get_base_url(model_name),
     api_key="EMPTY",
+    # @@@ahoaho XXX
+    async_mode=async_mode,
     timeout=3600,
     extra_headers=default_headers,
 )
