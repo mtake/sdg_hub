@@ -372,13 +372,17 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 100
 # max_concurrency = 30
 
-# [v0.2 best] MEM=100G, Finished in 6.9 hours, 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
+# [v0.2 best as of 2025-09-08 night] MEM=100G, Finished in 6.9 hours, 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
 # save_freq = None
 # max_concurrency = 30
 
-# MEM=100G, WIP
+# [v0.2 best as of 2025-09-09 11am] MEM=100G, Finished in 4.5 hours (16275 secs), 18336 QA pairs. samples_processed: 20306, checkpoint_counter: 1
+# save_freq = None
+# max_concurrency = 40
+
+# WIP MEM=100G
 save_freq = None
-max_concurrency = 40
+max_concurrency = 50
 
 # MEM=100G, async_mode: false. Very slow. Killed
 # -n 64, MEM=200G, async_mode: false. Very slow. Killed
