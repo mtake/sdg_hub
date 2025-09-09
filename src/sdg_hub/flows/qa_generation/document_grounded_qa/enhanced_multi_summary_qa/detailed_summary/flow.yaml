@@ -1,6 +1,6 @@
 metadata:
-  name: "Key Facts Knowledge Tuning Dataset Generation Flow"
-  description: "Generates training datasets for knowledge tuning by creating diverse question-answer pairs from documents. Uses three summarization strategies (detailed summaries, extractive summaries, key facts) to help LLMs internalize document knowledge, enabling them to answer queries without requiring the original document in context."
+  name: "Detailed Summary Knowledge Tuning Dataset Generation Flow"
+  description: "Generates training datasets for knowledge tuning by creating diverse question-answer pairs from documents. Uses detailed summaries to help LLMs internalize document knowledge, enabling them to answer queries without requiring the original document in context."
   version: "2.0.0"
   author: "SDG Hub Contributors"
   
@@ -49,6 +49,7 @@ metadata:
     - "verification_rating"
 
 
+
 blocks:
   - block_type: DuplicateColumnsBlock
     block_config:
@@ -57,16 +58,16 @@ blocks:
 
   - block_type: PromptBuilderBlock
     block_config:
-      block_name: atomic_facts_prompt
-      input_cols: [document, document_outline, domain]
-      output_cols: atomic_facts_prompt
-      prompt_config_path: key_facts_summary.yaml
+      block_name: detailed_summary_prompt
+      input_cols: [document, document_outline]
+      output_cols: summary_prompt
+      prompt_config_path: detailed_summary.yaml
       format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
-      block_name: gen_atomic_facts
-      input_cols: atomic_facts_prompt
+      block_name: gen_detailed_summary
+      input_cols: summary_prompt
       output_cols: raw_summary
       max_tokens: 4096
       temperature: 0.7
@@ -75,10 +76,10 @@ blocks:
 
   - block_type: TextParserBlock
     block_config:
-      block_name: parse_atomic_facts
+      block_name: parse_detailed_summary
       input_cols: raw_summary
       output_cols: summary
-      start_tags: ["### Key Facts With Context"]
+      start_tags: [""]
       end_tags: [""]
 
   - block_type: RenameColumnsBlock
@@ -117,7 +118,7 @@ blocks:
       block_name: verify_question
       input_cols: [question]
       output_cols: [verification_explanation, verification_rating]
-      prompt_config_path: ../evaluate_question.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_question.yaml
       filter_value: 1.0
       operation: ge
       convert_dtype: float
@@ -150,7 +151,7 @@ blocks:
       block_name: eval_faithfulness
       input_cols: [document, response]
       output_cols: [faithfulness_explanation, faithfulness_judgment]
-      prompt_config_path: ../evaluate_faithfulness.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_faithfulness.yaml
       filter_value: "YES"
       operation: eq
       async_mode: true
@@ -163,7 +164,7 @@ blocks:
       block_name: eval_relevancy
       input_cols: [question, response]
       output_cols: [relevancy_explanation, relevancy_score]
-      prompt_config_path: ../evaluate_relevancy.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_relevancy.yaml
       filter_value: 2.0
       operation: eq
       convert_dtype: float

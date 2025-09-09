@@ -1,6 +1,6 @@
 metadata:
-  name: "Detailed Summary Knowledge Tuning Dataset Generation Flow"
-  description: "Generates training datasets for knowledge tuning by creating diverse question-answer pairs from documents. Uses detailed summaries to help LLMs internalize document knowledge, enabling them to answer queries without requiring the original document in context."
+  name: "Extractive Summary Knowledge Tuning Dataset Generation Flow"
+  description: "Generates training datasets for knowledge tuning by creating diverse question-answer pairs from documents. Uses three summarization strategies (detailed summaries, extractive summaries, key facts) to help LLMs internalize document knowledge, enabling them to answer queries without requiring the original document in context."
   version: "2.0.0"
   author: "SDG Hub Contributors"
   
@@ -48,26 +48,24 @@ metadata:
     - "verification_explanation"
     - "verification_rating"
 
-
-
 blocks:
   - block_type: DuplicateColumnsBlock
     block_config:
       block_name: duplicate_document_col
       input_cols: {document: base_document}
-
+  
   - block_type: PromptBuilderBlock
     block_config:
-      block_name: detailed_summary_prompt
+      block_name: extractive_summary_prompt
       input_cols: [document, document_outline]
-      output_cols: summary_prompt
-      prompt_config_path: detailed_summary.yaml
+      output_cols: extractive_summary_prompt
+      prompt_config_path: extractive_summary.yaml
       format_as_messages: true
 
   - block_type: LLMChatBlock
     block_config:
-      block_name: gen_detailed_summary
-      input_cols: summary_prompt
+      block_name: gen_extractive_summary
+      input_cols: extractive_summary_prompt
       output_cols: raw_summary
       max_tokens: 4096
       temperature: 0.7
@@ -76,7 +74,7 @@ blocks:
 
   - block_type: TextParserBlock
     block_config:
-      block_name: parse_detailed_summary
+      block_name: parse_extractive_summary
       input_cols: raw_summary
       output_cols: summary
       start_tags: [""]
@@ -112,13 +110,14 @@ blocks:
       output_cols: question
       start_tags: ["[QUESTION]"]
       end_tags: ["[END]"]
-  
+
+
   - block_type: VerifyQuestionBlock
     block_config:
       block_name: verify_question
       input_cols: [question]
       output_cols: [verification_explanation, verification_rating]
-      prompt_config_path: ../evaluate_question.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_question.yaml
       filter_value: 1.0
       operation: ge
       convert_dtype: float
@@ -145,13 +144,13 @@ blocks:
       temperature: 0.7
       n: 1
       async_mode: true
-  
+
   - block_type: EvaluateFaithfulnessBlock
     block_config:
       block_name: eval_faithfulness
       input_cols: [document, response]
       output_cols: [faithfulness_explanation, faithfulness_judgment]
-      prompt_config_path: ../evaluate_faithfulness.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_faithfulness.yaml
       filter_value: "YES"
       operation: eq
       async_mode: true
@@ -164,7 +163,7 @@ blocks:
       block_name: eval_relevancy
       input_cols: [question, response]
       output_cols: [relevancy_explanation, relevancy_score]
-      prompt_config_path: ../evaluate_relevancy.yaml
+      prompt_config_path: ../../multi_summary_qa/instructlab/evaluate_relevancy.yaml
       filter_value: 2.0
       operation: eq
       convert_dtype: float
