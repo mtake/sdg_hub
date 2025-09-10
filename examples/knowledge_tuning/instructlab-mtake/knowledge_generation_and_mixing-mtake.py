@@ -153,8 +153,8 @@ use_rits = True
 # %%
 # HuggingFace model name
 phi4_model_name_hf = "microsoft/phi-4"
-gptoss_model_name_hf = "openai/gpt-oss-20b"
-gptoss120_model_name_hf = "openai/gpt-oss-120b"
+gptoss20_model_name_hf = "openai/gpt-oss-20b"
+gptoss_model_name_hf = "openai/gpt-oss-120b"
 # llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
 llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
 # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
@@ -165,8 +165,8 @@ mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 if use_rits:
     # Served model name (RITS)
     phi4_model_name = "hosted_vllm/microsoft/phi-4"
-    gptoss_model_name = "hosted_vllm/openai/gpt-oss-20b"
-    gptoss120_model_name = "hosted_vllm/openai/gpt-oss-120b"
+    gptoss20_model_name = "hosted_vllm/openai/gpt-oss-20b"
+    gptoss_model_name = "hosted_vllm/openai/gpt-oss-120b"
     llama3_model_name = "hosted_vllm/meta-llama/llama-3-3-70b-instruct"
     llama4_model_name = "hosted_vllm/meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.2-24B-Instruct-2506"
@@ -174,8 +174,8 @@ if use_rits:
 else:
     # Served model name (self hosting via vLLM)
     phi4_model_name = f"hosted_vllm/{phi4_model_name_hf}"
+    gptoss20_model_name = f"hosted_vllm/{gptoss20_model_name_hf}"
     gptoss_model_name = f"hosted_vllm/{gptoss_model_name_hf}"
-    gptoss120_model_name = f"hosted_vllm/{gptoss120_model_name_hf}"
     llama3_model_name = f"hosted_vllm/{llama3_model_name_hf}"
     llama4_model_name = f"hosted_vllm/{llama4_model_name_hf}"
     mistral_model_name = f"hosted_vllm/{mistral_model_name_hf}"
@@ -183,8 +183,8 @@ else:
 
 # Model short name
 phi4_short_name = "phi4"
+gptoss20_short_name = "gptoss20"
 gptoss_short_name = "gptoss"
-gptoss120_short_name = "gptoss120"
 llama3_short_name = "llama3"
 llama4_short_name = "llama4"
 mistral_short_name = "mistral"
@@ -192,8 +192,8 @@ mixtral_short_name = "mixtral"
 
 # %%
 use_phi4 = True
+use_gptoss20 = False
 use_gptoss = False
-use_gptoss120 = False
 use_llama3 = False
 use_llama4 = False
 use_mistral = False
@@ -205,16 +205,16 @@ if use_phi4:
     # model_name_hf = phi4_model_name_hf
     model_name = phi4_model_name
     short_name = phi4_short_name
+elif use_gptoss20:
+    # @@@ahoaho XXX
+    # model_name_hf = gptoss20_model_name_hf
+    model_name = gptoss20_model_name
+    short_name = gptoss20_short_name
 elif use_gptoss:
     # @@@ahoaho XXX
     # model_name_hf = gptoss_model_name_hf
     model_name = gptoss_model_name
     short_name = gptoss_short_name
-elif use_gptoss120:
-    # @@@ahoaho XXX
-    # model_name_hf = gptoss120_model_name_hf
-    model_name = gptoss120_model_name
-    short_name = gptoss120_short_name
 elif use_llama3:
     # @@@ahoaho XXX
     # model_name_hf = llama3_model_name_hf
@@ -254,8 +254,8 @@ if use_rits:
     model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
     # avoid crashes in model_name
     model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-    model_dict[gptoss_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-20b"
-    model_dict[gptoss120_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
+    model_dict[gptoss20_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-20b"
+    model_dict[gptoss_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
     model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
     model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
     model_dict[mistral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
