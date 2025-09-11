@@ -98,7 +98,7 @@ print(f"QA flows: {qa_flows}")
 # For loading the flow simply use the fullname to load it
 # @@@ahoaho XXX
 # flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
-if data_name == "ja":
+if data_lang == "ja":
     flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning in Japanese"
 else:
     flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
