@@ -65,8 +65,6 @@ repeat_times = 1
 sdg_demo_output = "sdg_demo_output"
 
 _data_name = f"_{data_name}" if data_name is not None and len(data_name) > 0 else ""
-# _data_lang = f"_{data_lang}" if data_lang is not None and len(data_lang) > 0 else ""
-
 _data_name_repeat = f"{_data_name}_r{repeat_times}" if repeat_times > 1 else _data_name
 
 seed_data_dir = f"{sdg_demo_output}{_data_name}"
@@ -95,6 +93,18 @@ print(f"Available flows: {flows}")
 qa_flows = FlowRegistry.search_flows(tag="question-generation")
 print(f"QA flows: {qa_flows}")
 
+# %%
+# We will use the "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning" flow.
+# For loading the flow simply use the fullname to load it
+# @@@ahoaho XXX
+# flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
+if data_name == "ja":
+    flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning in Japanese"
+else:
+    flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
+flow_path = FlowRegistry.get_flow_path(flow_name)
+flow = Flow.from_yaml(flow_path)
+
 # %% [markdown]
 # #### Configure processing mode
 
@@ -102,31 +112,6 @@ print(f"QA flows: {qa_flows}")
 # @@@ahoaho XXX
 async_mode = True  # original
 # async_mode = False  # for test
-
-# %% [markdown]
-# #### Determine the generation flow to use
-
-# %%
-# We will use the "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning" flow.
-# For loading the flow simply use the fullname to load it
-# @@@ahoaho XXX
-# flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
-for qa_flow in qa_flows:
-    print(f"XXX qa_flow: {qa_flow}")
-    flow_name = qa_flow["name"]
-    metadata = FlowRegistry.get_flow_metadata(flow_name)
-
-    has_japanese = "japanese" in metadata.tags
-    if data_lang == "ja":
-        if has_japanese:
-            break
-    else:
-        if not has_japanese:
-            break
-
-print(f"XXX flow_name: {flow_name}")
-flow_path = FlowRegistry.get_flow_path(flow_name)
-flow = Flow.from_yaml(flow_path)
 
 # %% [markdown]
 # #### Identify the recommended model and set the model config
@@ -201,38 +186,24 @@ use_mixtral = False
 
 # %%
 if use_phi4:
-    # @@@ahoaho XXX
-    # model_name_hf = phi4_model_name_hf
     model_name = phi4_model_name
     short_name = phi4_short_name
 elif use_gptoss20:
-    # @@@ahoaho XXX
-    # model_name_hf = gptoss20_model_name_hf
     model_name = gptoss20_model_name
     short_name = gptoss20_short_name
 elif use_gptoss:
-    # @@@ahoaho XXX
-    # model_name_hf = gptoss_model_name_hf
     model_name = gptoss_model_name
     short_name = gptoss_short_name
 elif use_llama3:
-    # @@@ahoaho XXX
-    # model_name_hf = llama3_model_name_hf
     model_name = llama3_model_name
     short_name = llama3_short_name
 elif use_llama4:
-    # @@@ahoaho XXX
-    # model_name_hf = llama4_model_name_hf
     model_name = llama4_model_name
     short_name = llama4_short_name
 elif use_mistral:
-    # @@@ahoaho XXX
-    # model_name_hf = mistral_model_name_hf
     model_name = mistral_model_name
     short_name = mistral_short_name
 elif use_mixtral:
-    # @@@ahoaho XXX
-    # model_name_hf = mixtral_model_name_hf
     model_name = mixtral_model_name
     short_name = mixtral_short_name
 
@@ -434,34 +405,5 @@ def create_simple_qa_dataset(generated_data: Dataset) -> Dataset:
 messages_data = create_simple_qa_dataset(generated_data)
 
 messages_data.to_json(f"{output_dir}/messages_data.jsonl", orient="records", lines=True)
-
-# %% [markdown]
-# ### (Original code) Converting the generated data into training format
-
-# %%
-# import sys
-# import os
-# sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
-# from knowledge_utils import create_knowledge_regular_ds, create_knowledge_pretraining_ds
-
-# from datasets import concatenate_datasets
-
-# # Create Pretraining Knowledge Dataset (Also known as Phase 0.7/Phase 7)
-# instructlab_phase_1_ds = create_knowledge_pretraining_ds(generated_data)
-# instructlab_phase_1_ds.to_json(f'{output_dir}/instructlab_phase_1_ds.jsonl', orient='records', lines=True)
-
-# # Create Regular Knowledge Dataset (Also known as Phase 1.0/Phase 10)
-# instructlab_phase_2_ds = create_knowledge_regular_ds(generated_data)
-
-# # Mix the pre-computed skills with the regular knowledge dataset. If more than one dataset were generated simply add those in this concatenation stage.
-# # If you have any generated instruction data, that can be also mixed in this stage. If you only have generated skills phase 07 generation and training can be skipped.
-# instructlab_phase_2_ds.to_json(f'{output_dir}/instructlab_phase_2_ds.jsonl', orient='records', lines=True)
-
-# %%
-# # If you have any other instruction tuning datasets you can mix with phase 2 dataset.
-# instruction_tuning_dataset_path = "<Your instruction tuning dataset path>"
-# instruction_tuning_dataset = load_dataset('json', data_files=instruction_tuning_dataset_path, split='train')
-# instructlab_phase_2_ds = concatenate_datasets([instructlab_phase_2_ds, instruction_tuning_dataset])
-# instructlab_phase_2_ds.to_json(f'{output_dir}/instructlab_phase_2_ds.jsonl', orient='records', lines=True)
 
 

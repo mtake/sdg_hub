@@ -114,6 +114,8 @@
     "sdg_demo_output = \"sdg_demo_output\"\n",
     "\n",
     "_data_name = f\"_{data_name}\" if data_name is not None and len(data_name) > 0 else \"\"\n",
+    "# _data_lang = f\"_{data_lang}\" if data_lang is not None and len(data_lang) > 0 else \"\"\n",
+    "\n",
     "_data_name_repeat = f\"{_data_name}_r{repeat_times}\" if repeat_times > 1 else _data_name\n",
     "\n",
     "seed_data_dir = f\"{sdg_demo_output}{_data_name}\"\n",
@@ -158,24 +160,6 @@
    ]
   },
   {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# We will use the \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning\" flow.\n",
-    "# For loading the flow simply use the fullname to load it\n",
-    "# @@@ahoaho XXX\n",
-    "# flow_name = \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning\"\n",
-    "if data_name == \"ja\":\n",
-    "    flow_name = \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning in Japanese\"\n",
-    "else:\n",
-    "    flow_name = \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning\"\n",
-    "flow_path = FlowRegistry.get_flow_path(flow_name)\n",
-    "flow = Flow.from_yaml(flow_path)"
-   ]
-  },
-  {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
@@ -191,6 +175,41 @@
     "# @@@ahoaho XXX\n",
     "async_mode = True  # original\n",
     "# async_mode = False  # for test"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Determine the generation flow to use"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# We will use the \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning\" flow.\n",
+    "# For loading the flow simply use the fullname to load it\n",
+    "# @@@ahoaho XXX\n",
+    "# flow_name = \"Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning\"\n",
+    "for qa_flow in qa_flows:\n",
+    "    print(f\"XXX qa_flow: {qa_flow}\")\n",
+    "    flow_name = qa_flow[\"name\"]\n",
+    "    metadata = FlowRegistry.get_flow_metadata(flow_name)\n",
+    "\n",
+    "    has_japanese = \"japanese\" in metadata.tags\n",
+    "    if data_lang == \"ja\":\n",
+    "        if has_japanese:\n",
+    "            break\n",
+    "    else:\n",
+    "        if not has_japanese:\n",
+    "            break\n",
+    "\n",
+    "print(f\"XXX flow_name: {flow_name}\")\n",
+    "flow_path = FlowRegistry.get_flow_path(flow_name)\n",
+    "flow = Flow.from_yaml(flow_path)"
    ]
   },
   {
@@ -313,24 +332,38 @@
    "outputs": [],
    "source": [
     "if use_phi4:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = phi4_model_name_hf\n",
     "    model_name = phi4_model_name\n",
     "    short_name = phi4_short_name\n",
     "elif use_gptoss20:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = gptoss20_model_name_hf\n",
     "    model_name = gptoss20_model_name\n",
     "    short_name = gptoss20_short_name\n",
     "elif use_gptoss:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = gptoss_model_name_hf\n",
     "    model_name = gptoss_model_name\n",
     "    short_name = gptoss_short_name\n",
     "elif use_llama3:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = llama3_model_name_hf\n",
     "    model_name = llama3_model_name\n",
     "    short_name = llama3_short_name\n",
     "elif use_llama4:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = llama4_model_name_hf\n",
     "    model_name = llama4_model_name\n",
     "    short_name = llama4_short_name\n",
     "elif use_mistral:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = mistral_model_name_hf\n",
     "    model_name = mistral_model_name\n",
     "    short_name = mistral_short_name\n",
     "elif use_mixtral:\n",
+    "    # @@@ahoaho XXX\n",
+    "    # model_name_hf = mixtral_model_name_hf\n",
     "    model_name = mixtral_model_name\n",
     "    short_name = mixtral_short_name\n",
     "\n",
@@ -638,6 +671,51 @@
     "messages_data = create_simple_qa_dataset(generated_data)\n",
     "\n",
     "messages_data.to_json(f\"{output_dir}/messages_data.jsonl\", orient=\"records\", lines=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### (Original code) Converting the generated data into training format"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# import sys\n",
+    "# import os\n",
+    "# sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))\n",
+    "# from knowledge_utils import create_knowledge_regular_ds, create_knowledge_pretraining_ds\n",
+    "\n",
+    "# from datasets import concatenate_datasets\n",
+    "\n",
+    "# # Create Pretraining Knowledge Dataset (Also known as Phase 0.7/Phase 7)\n",
+    "# instructlab_phase_1_ds = create_knowledge_pretraining_ds(generated_data)\n",
+    "# instructlab_phase_1_ds.to_json(f'{output_dir}/instructlab_phase_1_ds.jsonl', orient='records', lines=True)\n",
+    "\n",
+    "# # Create Regular Knowledge Dataset (Also known as Phase 1.0/Phase 10)\n",
+    "# instructlab_phase_2_ds = create_knowledge_regular_ds(generated_data)\n",
+    "\n",
+    "# # Mix the pre-computed skills with the regular knowledge dataset. If more than one dataset were generated simply add those in this concatenation stage.\n",
+    "# # If you have any generated instruction data, that can be also mixed in this stage. If you only have generated skills phase 07 generation and training can be skipped.\n",
+    "# instructlab_phase_2_ds.to_json(f'{output_dir}/instructlab_phase_2_ds.jsonl', orient='records', lines=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# # If you have any other instruction tuning datasets you can mix with phase 2 dataset.\n",
+    "# instruction_tuning_dataset_path = \"<Your instruction tuning dataset path>\"\n",
+    "# instruction_tuning_dataset = load_dataset('json', data_files=instruction_tuning_dataset_path, split='train')\n",
+    "# instructlab_phase_2_ds = concatenate_datasets([instructlab_phase_2_ds, instruction_tuning_dataset])\n",
+    "# instructlab_phase_2_ds.to_json(f'{output_dir}/instructlab_phase_2_ds.jsonl', orient='records', lines=True)"
    ]
   }
  ],
