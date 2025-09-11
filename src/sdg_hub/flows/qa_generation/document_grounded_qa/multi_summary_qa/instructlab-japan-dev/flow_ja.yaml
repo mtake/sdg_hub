@@ -16,7 +16,6 @@ metadata:
     - "qa-pairs"
     - "document-processing"
     - "educational"
-    - "instructlab-japan"
     - "japanese"
   
   license: "Apache-2.0"
