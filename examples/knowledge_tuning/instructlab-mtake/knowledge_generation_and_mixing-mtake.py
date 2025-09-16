@@ -38,13 +38,13 @@ timestamp = now.strftime('%Y%m%d-%H%M%S')
 
 # %%
 # data_name = ""
-# data_name = "teigaku-genzei"
+data_name = "teigaku-genzei"
 # data_name = "teigaku-genzei-ibm-v0"
 # data_name = "teigaku-genzei-ibm-v2"
 # data_name = "teigaku-genzei-ibm-v3"
 # data_name = "teigaku-genzei-ibm-v4"
 # data_name = "teigaku-genzei-ibm-v5"
-data_name = "teigaku-genzei-ibm-v6"
+# data_name = "teigaku-genzei-ibm-v6"
 # data_name = "ibm-newsroom"
 # data_name = "ibm-newsroom-en"
 # data_name = "jfe-technical-report"
@@ -58,8 +58,8 @@ elif data_name.startswith(("teigaku-genzei", "ibm-newsroom", "jfe-technical-repo
 else:
     data_lang = ""
 
-# repeat_times = 1
-repeat_times = 5
+repeat_times = 1
+# repeat_times = 5
 
 # %%
 sdg_demo_output = "sdg_demo_output"
@@ -345,13 +345,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 
 # WIP teigaku-genzei-ibm-v6
 # [v0.2 20250907-034856] MEM=100G, Finished in 6.9 hours (24679 secs), 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
-save_freq = None
-max_concurrency = 30
-
-# teigaku-genzei
-# [v0.2 best 20250908-130424] MEM=100G, Finished in 4.5 hours (16275 secs), 18336 QA pairs. samples_processed: 20306, checkpoint_counter: 1
 # save_freq = None
-# max_concurrency = 40
+# max_concurrency = 30
+
+# OK for teigaku-genzei
+# [v0.2 best 20250908-130424] MEM=100G, Finished in 4.5 hours (16275 secs), 18336 QA pairs. samples_processed: 20306, checkpoint_counter: 1
+save_freq = None
+max_concurrency = 40
 
 # [v0.2 20250909-015619] MEM=100G, Unclosed client session. client_session: <aiohttp.client.ClientSession object at 0x14dc52560b60>
 # save_freq = None
