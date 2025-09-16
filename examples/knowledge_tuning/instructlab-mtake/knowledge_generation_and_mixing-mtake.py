@@ -343,13 +343,15 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 100
 # max_concurrency = 30
 
+# WIP teigaku-genzei-ibm-v6
 # [v0.2 20250907-034856] MEM=100G, Finished in 6.9 hours (24679 secs), 18656 QA pairs. samples_processed: 20668, checkpoint_counter: 1
-# save_freq = None
-# max_concurrency = 30
-
-# [v0.2 best 20250908-130424] MEM=100G, Finished in 4.5 hours (16275 secs), 18336 QA pairs. samples_processed: 20306, checkpoint_counter: 1
 save_freq = None
-max_concurrency = 40
+max_concurrency = 30
+
+# teigaku-genzei
+# [v0.2 best 20250908-130424] MEM=100G, Finished in 4.5 hours (16275 secs), 18336 QA pairs. samples_processed: 20306, checkpoint_counter: 1
+# save_freq = None
+# max_concurrency = 40
 
 # [v0.2 20250909-015619] MEM=100G, Unclosed client session. client_session: <aiohttp.client.ClientSession object at 0x14dc52560b60>
 # save_freq = None
