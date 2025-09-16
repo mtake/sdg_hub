@@ -7,7 +7,7 @@ metadata:
   
   recommended_models:
     default: "microsoft/phi-4"
-    compatible: []
+    compatible: ["meta-llama/Llama-3.3-70B-Instruct", "mistralai/Mixtral-8x7B-Instruct-v0.1"]
     experimental: []
   
   tags:
