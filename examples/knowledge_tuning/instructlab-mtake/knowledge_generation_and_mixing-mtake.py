@@ -353,13 +353,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 40
 
 # bkilled teigaku-genzei-ibm-v6 61.1 hours estimated
-# WIP teigaku-genzei-ibm-v6
-save_freq = 100
-max_concurrency = 20
+# save_freq = 100
+# max_concurrency = 20
 
 # bkilled teigaku-genzei-ibm-v6 didn't proceed
-# save_freq = 100
-# max_concurrency = 30
+# WIP teigaku-genzei-ibm-v6
+save_freq = 100
+max_concurrency = 30
 
 # teigaku-genzei-ibm-v6 [11:20:15] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
 # save_freq = 100
