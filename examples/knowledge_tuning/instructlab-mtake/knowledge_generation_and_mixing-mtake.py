@@ -137,7 +137,7 @@ use_rits = True
 # %%
 # HuggingFace model name
 phi4_model_name_hf = "microsoft/phi-4"
-gptoss20_model_name_hf = "openai/gpt-oss-20b"
+phi4test_model_name_hf = "microsoft/phi-4"
 gptoss_model_name_hf = "openai/gpt-oss-120b"
 # llama3_model_name_hf = "meta-llama/Llama-3.3-70B-Instruct"
 llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
@@ -149,25 +149,41 @@ mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 if use_rits:
     # Served model name (RITS)
     phi4_model_name = "hosted_vllm/microsoft/phi-4"
-    gptoss20_model_name = "hosted_vllm/openai/gpt-oss-20b"
+    phi4test_model_name = "hosted_vllm/microsoft/phi-4"
     gptoss_model_name = "hosted_vllm/openai/gpt-oss-120b"
     llama3_model_name = "hosted_vllm/meta-llama/llama-3-3-70b-instruct"
     llama4_model_name = "hosted_vllm/meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.2-24B-Instruct-2506"
     mixtral_model_name = "hosted_vllm/mistralai/mixtral-8x7B-instruct-v0.1"
+    # Model inference endpoint (RITS)
+    phi4_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+    phi4test_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4-test"
+    gptoss_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
+    llama3_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
+    llama4_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
+    mistral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
+    mixtral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 else:
     # Served model name (self hosting via vLLM)
     phi4_model_name = f"hosted_vllm/{phi4_model_name_hf}"
-    gptoss20_model_name = f"hosted_vllm/{gptoss20_model_name_hf}"
+    phi4test_model_name = f"hosted_vllm/{phi4test_model_name_hf}"
     gptoss_model_name = f"hosted_vllm/{gptoss_model_name_hf}"
     llama3_model_name = f"hosted_vllm/{llama3_model_name_hf}"
     llama4_model_name = f"hosted_vllm/{llama4_model_name_hf}"
     mistral_model_name = f"hosted_vllm/{mistral_model_name_hf}"
     mixtral_model_name = f"hosted_vllm/{mixtral_model_name_hf}"
+    # Model inference endpoint (self hosting via vLLM)
+    phi4_model_endpoint = "http://0.0.0.0:8000"
+    phi4test_model_endpoint = "http://0.0.0.0:8000"
+    gptoss_model_endpoint = "http://0.0.0.0:8000"
+    llama3_model_endpoint = "http://0.0.0.0:8000"
+    llama4_model_endpoint = "http://0.0.0.0:8000"
+    mistral_model_endpoint = "http://0.0.0.0:8000"
+    mixtral_model_endpoint = "http://0.0.0.0:8000"
 
 # Model short name
 phi4_short_name = "phi4"
-gptoss20_short_name = "gptoss20"
+phi4test_short_name = "phi4test"
 gptoss_short_name = "gptoss"
 llama3_short_name = "llama3"
 llama4_short_name = "llama4"
@@ -175,70 +191,48 @@ mistral_short_name = "mistral"
 mixtral_short_name = "mixtral"
 
 # %%
-use_phi4 = True
-use_gptoss20 = False
-use_gptoss = False
-use_llama3 = False
-use_llama4 = False
-use_mistral = False
-use_mixtral = False
+import os
+
+short_name = os.getenv("TEACHER", phi4_short_name)
+
+if short_name not in (phi4_short_name, phi4test_short_name, gptoss_short_name, llama3_short_name, llama4_short_name, mistral_short_name, mixtral_short_name):
+    print(f"WARNING: unknown model: {short_name}. fall back to {phi4_short_name}")
+    short_name = phi4_short_name
 
 # %%
-if use_phi4:
+if short_name == phi4_short_name:
     model_name = phi4_model_name
-    short_name = phi4_short_name
-elif use_gptoss20:
-    model_name = gptoss20_model_name
-    short_name = gptoss20_short_name
-elif use_gptoss:
+    model_endpoint = phi4_model_endpoint
+elif short_name == phi4test_short_name:
+    model_name = phi4test_model_name
+    model_endpoint = phi4test_model_endpoint
+elif short_name == gptoss_short_name:
     model_name = gptoss_model_name
-    short_name = gptoss_short_name
-elif use_llama3:
+    model_endpoint = gptoss_model_endpoint
+elif short_name == llama3_short_name:
     model_name = llama3_model_name
-    short_name = llama3_short_name
-elif use_llama4:
+    model_endpoint = llama3_model_endpoint
+elif short_name == llama4_short_name:
     model_name = llama4_model_name
-    short_name = llama4_short_name
-elif use_mistral:
+    model_endpoint = llama4_model_endpoint
+elif short_name == mistral_short_name:
     model_name = mistral_model_name
-    short_name = mistral_short_name
-elif use_mixtral:
+    model_endpoint = mistral_model_endpoint
+elif short_name == mixtral_short_name:
     model_name = mixtral_model_name
-    short_name = mixtral_short_name
+    model_endpoint = mixtral_model_endpoint
+else:
+    assert False, "Should not come here"
 
 # output_dir = f"{output_dir_prefix}_{short_name}"
 output_dir = f"{output_dir_prefix}_{short_name}_{timestamp}"
 
 # %%
-import os
-import requests
+extra_headers: dict[str, any] = {}
 
 if use_rits:
     RITS_API_KEY = os.getenv("RITS_API_KEY")
-    default_headers = {"RITS_API_KEY": RITS_API_KEY}
-
-    url = "https://rits.fmaas.res.ibm.com/ritsapi/inferenceinfo"
-    res = requests.get(url=url, headers=default_headers)
-    assert res.status_code == 200
-    model_list: list[dict[str, str]] = res.json()
-    model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
-    # avoid crashes in model_name
-    # @@@ahoaho XXX
-    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-    # model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4-test"
-    model_dict[gptoss20_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-20b"
-    model_dict[gptoss_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
-    model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
-    model_dict[llama4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
-    model_dict[mistral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
-    model_dict[mixtral_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
-else:
-    default_headers: dict[str, str] = {}
-    model_dict: dict[str, str] = {}
-
-def get_base_url(model_name: str) -> str:
-    endpoint = model_dict.get(model_name, "http://0.0.0.0:8000")  # fall back to vllm
-    return f"{endpoint}/v1"
+    extra_headers["RITS_API_KEY"] = RITS_API_KEY
 
 # %%
 # You can dynamically change the model without having to change the flow yaml file.
@@ -251,11 +245,11 @@ def get_base_url(model_name: str) -> str:
 # )
 flow.set_model_config(
     model=model_name,
-    api_base=get_base_url(model_name),
+    api_base=f"{model_endpoint}/v1",
     api_key="EMPTY",
     async_mode=async_mode,
     timeout=3600,
-    extra_headers=default_headers,
+    extra_headers=extra_headers,
 )
 
 # %% [markdown]
