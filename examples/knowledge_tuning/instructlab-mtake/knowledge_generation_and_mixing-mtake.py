@@ -223,7 +223,9 @@ if use_rits:
     model_list: list[dict[str, str]] = res.json()
     model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
     # avoid crashes in model_name
-    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+    # @@@ahoaho XXX
+    # model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4-test"
     model_dict[gptoss20_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-20b"
     model_dict[gptoss_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
     model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
@@ -357,13 +359,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 20
 
 # bkilled teigaku-genzei-ibm-v6 didn't proceed
-# WIP teigaku-genzei-ibm-v6
-save_freq = 100
-max_concurrency = 30
+# save_freq = 100
+# max_concurrency = 30
 
 # teigaku-genzei-ibm-v6 [11:20:15] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
-# save_freq = 100
-# max_concurrency = 40
+# WIP teigaku-genzei-ibm-v6 on phi-4-test
+save_freq = 100
+max_concurrency = 40
 
 # [v0.2 20250909-015619] MEM=100G, Unclosed client session. client_session: <aiohttp.client.ClientSession object at 0x14dc52560b60>
 # save_freq = None
