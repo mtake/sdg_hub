@@ -99,7 +99,7 @@ print(f"QA flows: {qa_flows}")
 # @@@ahoaho XXX
 # flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
 if data_lang == "ja":
-    flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning in Japanese"
+    flow_name = "Advanced Japanese Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
 else:
     flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
 flow_path = FlowRegistry.get_flow_path(flow_name)

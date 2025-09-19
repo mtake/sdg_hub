@@ -1,7 +1,7 @@
 metadata:
   id: clean-shadow-397
-  name: "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning in Japanese"
-  description: "A comprehensive flow that generates high-quality question-answer pairs from input documents in Japanese using multiple LLM blocks for question generation, answer synthesis, and quality evaluation."
+  name: "Advanced Japanese Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
+  description: "A comprehensive flow that generates high-quality question-answer pairs from Japanese input documents using multiple LLM blocks for question generation, answer synthesis, and quality evaluation."
   version: "1.0.0"
   author: "SDG Hub Contributors"
   
@@ -33,7 +33,7 @@ metadata:
       - "icl_response_2"
       - "icl_query_3"
       - "icl_response_3"
-    description: "Input dataset should contain documents with text content in Japanese and domain classification. Each document should be substantial enough for meaningful question generation (minimum 100 words recommended)."
+    description: "Input dataset should contain documents with Japanese text content and domain classification. Each document should be substantial enough for meaningful question generation (minimum 100 words recommended)."
 
 blocks:
   - block_type: DuplicateColumnsBlock
