@@ -355,6 +355,8 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 40
 
 # bkilled teigaku-genzei-ibm-v6 61.1 hours estimated
+# teigaku-genzei-ibm-v6 on phi-4-test sdg_hub.core.utils.error_handling.FlowValidationError: Block 'knowledge_generation' execution failed: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
+# WIP teigaku-genzei-ibm-v6
 save_freq = 100
 max_concurrency = 20
 
