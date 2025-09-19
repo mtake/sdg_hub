@@ -359,13 +359,14 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 20
 
 # bkilled teigaku-genzei-ibm-v6 didn't proceed
-# save_freq = 100
-# max_concurrency = 30
-
-# teigaku-genzei-ibm-v6 [11:20:15] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
 # WIP teigaku-genzei-ibm-v6 on phi-4-test
 save_freq = 100
-max_concurrency = 40
+max_concurrency = 30
+
+# teigaku-genzei-ibm-v6 [11:20:15] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
+# teigaku-genzei-ibm-v6 on phi-4-test [00:22:01] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
+# save_freq = 100
+# max_concurrency = 40
 
 # [v0.2 20250909-015619] MEM=100G, Unclosed client session. client_session: <aiohttp.client.ClientSession object at 0x14dc52560b60>
 # save_freq = None
