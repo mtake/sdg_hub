@@ -224,8 +224,8 @@ if use_rits:
     model_dict = { m["model_name"]: m["endpoint"] for m in model_list }
     # avoid crashes in model_name
     # @@@ahoaho XXX
-    # model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
-    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4-test"
+    model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
+    # model_dict[phi4_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4-test"
     model_dict[gptoss20_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-20b"
     model_dict[gptoss_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
     model_dict[llama3_model_name] = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
