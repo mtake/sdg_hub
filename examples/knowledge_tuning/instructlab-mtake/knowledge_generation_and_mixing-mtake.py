@@ -355,13 +355,13 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # max_concurrency = 40
 
 # bkilled teigaku-genzei-ibm-v6 61.1 hours estimated
-# save_freq = 100
-# max_concurrency = 20
+save_freq = 100
+max_concurrency = 20
 
 # bkilled teigaku-genzei-ibm-v6 didn't proceed
-# WIP teigaku-genzei-ibm-v6 on phi-4-test
-save_freq = 100
-max_concurrency = 30
+# teigaku-genzei-ibm-v6 on phi-4-test sdg_hub.core.utils.error_handling.FlowValidationError: Block 'knowledge_generation' execution failed: litellm.NotFoundError: NotFoundError: Hosted_vllmException - Error getting active endpoint: revision.serving.knative.dev "microsoft-phi-4-test-predictor-00074" not found
+# save_freq = 100
+# max_concurrency = 30
 
 # teigaku-genzei-ibm-v6 [11:20:15] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
 # teigaku-genzei-ibm-v6 on phi-4-test [00:22:01] ERROR    Block 'eval_faithfulness' failed during execution: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
