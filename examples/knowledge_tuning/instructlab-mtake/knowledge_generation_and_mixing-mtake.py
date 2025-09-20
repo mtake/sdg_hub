@@ -224,8 +224,9 @@ elif short_name == mixtral_short_name:
 else:
     assert False, "Should not come here"
 
-# output_dir = f"{output_dir_prefix}_{short_name}"
-output_dir = f"{output_dir_prefix}_{short_name}_{timestamp}"
+# @@@ahoaho XXX
+output_dir = f"{output_dir_prefix}_{short_name}"  # for continued execution after failure
+# output_dir = f"{output_dir_prefix}_{short_name}_{timestamp}"
 
 # %%
 extra_headers: dict[str, any] = {}
@@ -350,7 +351,7 @@ checkpoint_dir = f"{output_dir}_ckpt"
 
 # bkilled teigaku-genzei-ibm-v6 61.1 hours estimated
 # teigaku-genzei-ibm-v6 on phi-4-test sdg_hub.core.utils.error_handling.FlowValidationError: Block 'knowledge_generation' execution failed: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
-# WIP teigaku-genzei-ibm-v6
+# teigaku-genzei-ibm-v6 on phi-4 sdg_hub.core.utils.error_handling.FlowValidationError: Block 'verify_question' execution failed: litellm.APIError: APIError: Hosted_vllmException - Authentication failed
 save_freq = 100
 max_concurrency = 20
 
