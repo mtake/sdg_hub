@@ -109,8 +109,18 @@ flow = Flow.from_yaml(flow_path)
 # #### Configure processing mode
 
 # %%
+import os
+
 async_mode = True  # original
 # async_mode = False  # single worker
+
+DEFAULT_TIMEOUT = 3600
+timeout_str = os.getenv("TIMEOUT", str(DEFAULT_TIMEOUT))
+try:
+    timeout = int(timeout_str)
+except ValueError:
+    print(f"WARNING: unsupported timeout value: {timeout_str}. fall back to {DEFAULT_TIMEOUT}")
+    timeout = DEFAULT_TIMEOUT
 
 # %% [markdown]
 # #### Identify the recommended model and set the model config
@@ -191,13 +201,13 @@ mistral_short_name = "mistral"
 mixtral_short_name = "mixtral"
 
 # %%
-import os
+DEFAULT_MODEL = phi4_short_name
 
-short_name = os.getenv("TEACHER", phi4_short_name)
+short_name = os.getenv("MODEL", DEFAULT_MODEL)
 
 if short_name not in (phi4_short_name, phi4test_short_name, gptoss_short_name, llama3_short_name, llama4_short_name, mistral_short_name, mixtral_short_name):
-    print(f"WARNING: unknown model: {short_name}. fall back to {phi4_short_name}")
-    short_name = phi4_short_name
+    print(f"WARNING: unknown model: {short_name}. fall back to {DEFAULT_MODEL}")
+    short_name = DEFAULT_MODEL
 
 # %%
 if short_name == phi4_short_name:
@@ -249,7 +259,7 @@ flow.set_model_config(
     api_base=f"{model_endpoint}/v1",
     api_key="EMPTY",
     async_mode=async_mode,
-    timeout=3600,
+    timeout=timeout,
     extra_headers=extra_headers,
 )
 
