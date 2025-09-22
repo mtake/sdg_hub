@@ -58,8 +58,8 @@ elif data_name.startswith(("teigaku-genzei", "ibm-newsroom", "jfe-technical-repo
 else:
     data_lang = ""
 
-# repeat_times = 1
-repeat_times = 5
+repeat_times = 1
+# repeat_times = 5
 
 # %%
 sdg_demo_output = "sdg_demo_output"
