@@ -365,7 +365,7 @@ checkpoint_dir = f"{output_dir}_ckpt"
 # save_freq = 100
 # max_concurrency = 20
 
-# WIP teigaku-genzei-ibm-v6 on phi-4
+# [v0.2 20250923-033910] teigaku-genzei-ibm-v6 on phi-4. Finished in 23 hours (including idle time), 7 job submissions in total, 16751 QA pairs. samples_processed: 18605, checkpoint_counter: 1861
 save_freq = 10
 max_concurrency = 20
 
