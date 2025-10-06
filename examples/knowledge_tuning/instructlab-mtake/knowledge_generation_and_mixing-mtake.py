@@ -317,7 +317,7 @@ print(f"Loaded {len(ds)} seed data", flush=True)
 
 checkpoint_dir = f"{output_dir}_ckpt"
 
-# See https://github.com/mtake/sdg_hub/blob/main/docs/blocks/llm-blocks.md#async-processing--concurrency-control
+# See https://github.com/Red-Hat-AI-Innovation-Team/sdg_hub/blob/main/docs/blocks/llm-blocks.md#async-processing--concurrency-control
 
 # save_freq = 1000  # Request timed out. - timeout value=600.0, time taken=1802.91 seconds
 # save_freq = 100  # Creates 200 checkpoints
