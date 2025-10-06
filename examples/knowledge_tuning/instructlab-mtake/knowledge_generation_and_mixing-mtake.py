@@ -232,7 +232,7 @@ elif short_name == mixtral_short_name:
     model_name = mixtral_model_name
     model_endpoint = mixtral_model_endpoint
 else:
-    assert False, "Should not come here"
+    raise ValueError(f"Invalid short_name: {short_name}")
 
 # @@@ahoaho XXX
 # output_dir = f"{output_dir_prefix}_{short_name}"  # for continued execution after failure
@@ -413,7 +413,7 @@ from datasets import Dataset
 
 def create_simple_qa_dataset(generated_data: Dataset) -> Dataset:
     seen = set()
-    messages_list: list[dict[str, any]] = []
+    messages_list: list[dict] = []
     for generated_data_i in generated_data:
         user = generated_data_i['question']
         assistant = generated_data_i['response']
