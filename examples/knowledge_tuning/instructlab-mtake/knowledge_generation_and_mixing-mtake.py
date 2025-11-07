@@ -45,6 +45,7 @@ timestamp = now.strftime('%Y%m%d-%H%M%S')
 # data_name = "teigaku-genzei-ibm-v4"
 # data_name = "teigaku-genzei-ibm-v5"
 data_name = "teigaku-genzei-ibm-v6"
+# data_name = "akita-medical"
 # data_name = "ibm-newsroom"
 # data_name = "ibm-newsroom-en"
 # data_name = "jfe-technical-report"
@@ -53,7 +54,7 @@ if data_name.endswith(("_ja", "-ja")):
     data_lang = "ja"
 elif data_name.endswith(("_en", "-en")):
     data_lang = ""
-elif data_name.startswith(("teigaku-genzei", "ibm-newsroom", "jfe-technical-report")):
+elif data_name.startswith(("teigaku-genzei", "akita-medical", "ibm-newsroom", "jfe-technical-report")):
     data_lang = "ja"
 else:
     data_lang = ""
