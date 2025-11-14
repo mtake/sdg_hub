@@ -433,6 +433,6 @@ def create_simple_qa_dataset(generated_data: Dataset) -> Dataset:
 # %%
 messages_data = create_simple_qa_dataset(generated_data)
 os.makedirs(output_dir, exist_ok=True)
-messages_data.to_json(f"{output_dir}/messages_data.jsonl")
+messages_data.to_json(f"{output_dir}/messages_data.jsonl", force_ascii=False)
 
 
