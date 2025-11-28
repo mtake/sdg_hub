@@ -268,10 +268,7 @@ flow.set_model_config(
 # #### Load and prepare seed data
 
 # %%
-# Load the seed data
-# number_of_samples = 2
-# ds = load_dataset('json', data_files=seed_data_path, split='train')
-# ds = ds.shuffle(seed=42).select(range(number_of_samples))
+sample_size = 2
 
 # %%
 # Load the seed data
@@ -289,13 +286,6 @@ if repeat_times > 1:
 
 # %%
 # ds = ds.shuffle(seed=42)
-
-# %% [markdown]
-# (Optional) sample seed data
-
-# %%
-# number_of_samples = 2
-# ds = ds.select(range(number_of_samples))
 
 # %% [markdown]
 # Add seed id
@@ -401,6 +391,23 @@ max_concurrency = 20
 # MEM=100G, async_mode: false. Very slow. Killed
 # save_freq = None
 # max_concurrency = None
+
+# %%
+print("Dry run to test and estimate time", flush=True)
+
+# %%
+# Test AND estimate in one call
+result = flow.dry_run(ds, sample_size=sample_size, max_concurrency=max_concurrency, enable_time_estimation=True)
+
+# Access dry run results
+print(f"Tested with {result['sample_size']} samples")
+print(f"Output columns: {result['final_dataset']['columns']}")
+
+# Time estimation is automatically displayed in a Rich table format
+# No need to access it programmatically - the table shows all estimation details
+
+# %%
+print("Now generate full data", flush=True)
 
 # %%
 # Generate data
