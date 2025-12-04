@@ -154,7 +154,8 @@ gptoss_model_name_hf = "openai/gpt-oss-120b"
 llama3_model_name_hf = "unsloth/Llama-3.3-70B-Instruct"
 # llama4_model_name_hf = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
 llama4_model_name_hf = "unsloth/Llama-4-Maverick-17B-128E-Instruct-FP8"
-mistral_model_name_hf = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+# mistral_model_name_hf = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+mistral_model_name_hf = "mistralai/Mistral-Large-3-675B-Instruct-2512"
 mixtral_model_name_hf = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 if use_rits:
@@ -164,7 +165,8 @@ if use_rits:
     gptoss_model_name = "hosted_vllm/openai/gpt-oss-120b"
     llama3_model_name = "hosted_vllm/meta-llama/llama-3-3-70b-instruct"
     llama4_model_name = "hosted_vllm/meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
-    mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+    # mistral_model_name = "hosted_vllm/mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+    mistral_model_name = "hosted_vllm/mistralai/Mistral-Large-3-675B-Instruct-2512"
     mixtral_model_name = "hosted_vllm/mistralai/mixtral-8x7B-instruct-v0.1"
     # Model inference endpoint (RITS)
     phi4_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/microsoft-phi-4"
@@ -172,7 +174,8 @@ if use_rits:
     gptoss_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/gpt-oss-120b"
     llama3_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-3-3-70b-instruct"
     llama4_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/llama-4-mvk-17b-128e-fp8"
-    mistral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
+    # mistral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-small-3-2-24b-2506"
+    mistral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mistral-large-3-675b-2512"
     mixtral_model_endpoint = "https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/mixtral-8x7b-instruct-v01"
 else:
     # Served model name (self hosting via vLLM)
@@ -202,7 +205,9 @@ mistral_short_name = "mistral"
 mixtral_short_name = "mixtral"
 
 # %%
-DEFAULT_MODEL = phi4_short_name
+# @@@ahoaho XXX
+# DEFAULT_MODEL = phi4_short_name
+DEFAULT_MODEL = mistral_short_name
 
 short_name = os.getenv("MODEL", DEFAULT_MODEL)
 
@@ -393,18 +398,18 @@ max_concurrency = 20
 # max_concurrency = None
 
 # %%
-print("Dry run to test and estimate time", flush=True)
+if False:
+    print("Dry run to test and estimate time", flush=True)
 
-# %%
-# Test AND estimate in one call
-result = flow.dry_run(ds, sample_size=sample_size, max_concurrency=max_concurrency, enable_time_estimation=True)
+    # Test AND estimate in one call
+    result = flow.dry_run(ds, sample_size=sample_size, max_concurrency=max_concurrency, enable_time_estimation=True)
 
-# Access dry run results
-print(f"Tested with {result['sample_size']} samples")
-print(f"Output columns: {result['final_dataset']['columns']}")
+    # Access dry run results
+    print(f"Tested with {result['sample_size']} samples")
+    print(f"Output columns: {result['final_dataset']['columns']}")
 
-# Time estimation is automatically displayed in a Rich table format
-# No need to access it programmatically - the table shows all estimation details
+    # Time estimation is automatically displayed in a Rich table format
+    # No need to access it programmatically - the table shows all estimation details
 
 # %%
 print("Now generate full data", flush=True)
