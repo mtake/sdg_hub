@@ -26,15 +26,11 @@ SDG Hub organizes blocks into logical categories:
 | **Filtering** | Quality control | Value-based filtering, threshold checks |
 | **Evaluation** | Quality assessment | Faithfulness scoring, relevancy evaluation |
 
-### Block Example
-#TODO: Add block example
+For detailed block examples and usage patterns, see [Block System Overview](blocks/overview.md).
 
 ## 🌊 Flows: Orchestrating Pipelines
 
 **Flows** are YAML-defined pipelines that orchestrate multiple blocks into complete data processing workflows.
-
-### Flow Structure
-#TODO: Add flow structure
 
 ### Flow Execution Model
 
@@ -57,6 +53,8 @@ Each block:
 - **⚙️ Parameterization** - Customize behavior without code changes
 - **🛡️ Validation** - Built-in checks for configuration and data compatibility
 - **📊 Monitoring** - Execution tracking and performance metrics
+
+For detailed flow structure and YAML configuration examples, see [Flow System Overview](flows/overview.md).
 
 ## 🔍 Auto-Discovery System
 
@@ -187,6 +185,6 @@ print(f"Output columns: {result['final_dataset']['columns']}")
 Now that you understand the core concepts:
 
 1. **[Explore Block Types](blocks/overview.md)** - Learn about specific block categories
-2. **[Master Flow Configuration](flows/yaml-configuration.md)** - Deep dive into YAML structure
+2. **[Understand Flow System](flows/overview.md)** - Chain blocks into complete flows
 3. **[Build Custom Components](blocks/custom-blocks.md)** - Create your own blocks
-4. **[Advanced Patterns](flows/custom-flows.md)** - Build sophisticated pipelines
+4. **[Advanced Patterns](flows/custom-flows.md)** - Build sophisticated flows
