@@ -15,7 +15,7 @@ from knowledge_mixing_utils import (
 
 # %%
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # Load configuration from environment variables
 exp_folder = os.getenv("OUTPUT_DATA_FOLDER", "generated_output_data")
@@ -365,7 +365,9 @@ processed_knowledge_dataset = processed_knowledge_dataset.remove_columns(
 ).rename_column("messages_without_think", "messages")
 upscale_data_size = 1
 
-cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9)
+# @@@ahoaho XXX
+# cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9)
+cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9, student_model=student_model)
 raft_samples = build_raft_samples(processed_knowledge_dataset, cfg)
 raft_samples = raft_samples.map(build_messages).remove_columns(
     [
