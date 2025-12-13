@@ -135,7 +135,7 @@ def render_system_msg(documents: list[dict], chat_template: jinja2.environment.T
     #     {"doc_id": 3, "title": "Bridget Jones's Diary (2001)", "text": "Bridget Jones's Diary (2001) - Bridget Jones is a binge drinking and chain smoking thirty-something British woman trying to keep her love life in order while also dealing with her job as a publisher. When she attends a Christmas party with her parents, they try to set her up with their neighbours' son, Mark. After being snubbed by Mark, she starts to fall for her boss Daniel, a handsome man who begins to send her suggestive e-mails that leads to a dinner date. Daniel reveals that he and Mark attended college together, in that time Mark had an affair with his fiancée. Bridget decides to get a new job as a TV presenter after finding Daniel being frisky with a colleague. At a dinner party, she runs into Mark who expresses his affection for her, Daniel claims he wants Bridget back, the two fight over her and Bridget must make a decision who she wants to be with.", "source": ""},
     # ]
 
-    print(f"XXX documents = {documents} XXX")
+    print(f"XXX documents = XXX{documents}XXX")
 
     render_dict['documents'] = documents
 
@@ -145,6 +145,17 @@ def render_system_msg(documents: list[dict], chat_template: jinja2.environment.T
     render_dict['messages'] = messages
 
     system_msg = chat_template.render(**render_dict)
+
+    # Remove prefix and suffix from system_msg
+    prefix = "&lt;|start_of_role|&gt;system&lt;|end_of_role|&gt;"
+    prefix_start = system_msg.find(prefix)
+    if prefix_start >= 0:
+        system_msg = system_msg[prefix_start + len(prefix):]
+    suffix = "&lt;|end_of_text|&gt;\n"
+    suffix_start = system_msg.rfind(suffix)
+    if suffix_start >= 0:
+        system_msg = system_msg[:suffix_start]
+
     return system_msg
 
 
