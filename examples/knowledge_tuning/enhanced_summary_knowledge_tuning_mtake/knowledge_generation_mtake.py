@@ -49,7 +49,7 @@ from sdg_hub import Flow, FlowRegistry
 import os
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # %%
 # Required to run the flow with async mode
