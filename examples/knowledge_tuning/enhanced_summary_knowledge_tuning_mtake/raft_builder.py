@@ -113,9 +113,16 @@ def load_tokenizer(student_model):
 # ========================
 # Template utilities
 # ========================
+from datetime import datetime
+
+def strftime_now(fmt: str) -> str:
+    return datetime.now().strftime(fmt)
+
+
+import html
 import jinja2
 
-def render_system_msg(documents: list[dict], chat_template: jinja2.environment.Template):
+def render_system_message_granite(documents: list[dict], chat_template: jinja2.environment.Template):
 
     render_dict: dict[str, any] = {}
 
@@ -135,26 +142,61 @@ def render_system_msg(documents: list[dict], chat_template: jinja2.environment.T
     #     {"doc_id": 3, "title": "Bridget Jones's Diary (2001)", "text": "Bridget Jones's Diary (2001) - Bridget Jones is a binge drinking and chain smoking thirty-something British woman trying to keep her love life in order while also dealing with her job as a publisher. When she attends a Christmas party with her parents, they try to set her up with their neighbours' son, Mark. After being snubbed by Mark, she starts to fall for her boss Daniel, a handsome man who begins to send her suggestive e-mails that leads to a dinner date. Daniel reveals that he and Mark attended college together, in that time Mark had an affair with his fiancée. Bridget decides to get a new job as a TV presenter after finding Daniel being frisky with a colleague. At a dinner party, she runs into Mark who expresses his affection for her, Daniel claims he wants Bridget back, the two fight over her and Bridget must make a decision who she wants to be with.", "source": ""},
     # ]
 
-    print(f"XXX documents = XXX{documents}XXX")
+    # print(f"XXX documents = XXX{documents}XXX")
 
     render_dict['documents'] = documents
 
     messages = [
-        {"role": "", "content": ""},  # role must be neither system, user, assistant, nor tool
+        {"role": "", "content": ""},  # a dummy message with empty role
     ]
     render_dict['messages'] = messages
 
+    render_dict['strftime_now'] = strftime_now  # required for granite 3
+
     system_msg = chat_template.render(**render_dict)
 
+    # print(f"XXX PRE system_msg = XXX{system_msg}XXX")
+
     # Remove prefix and suffix from system_msg
-    prefix = "&lt;|start_of_role|&gt;system&lt;|end_of_role|&gt;"
-    prefix_start = system_msg.find(prefix)
+    # granite 3 uses normal but granite 4 uses escape.
+    prefix_normal = "<|start_of_role|>system<|end_of_role|>"
+    prefix_escape = html.escape(prefix_normal)
+    prefix_start = -1
+    prefix_normal_start = system_msg.find(prefix_normal)
+    prefix_escape_start = system_msg.find(prefix_escape)
+    if prefix_normal_start >= 0:
+        prefix = prefix_normal
+        prefix_start = prefix_normal_start
+    elif prefix_escape_start >= 0:
+        prefix = prefix_escape
+        prefix_start = prefix_escape_start
     if prefix_start >= 0:
         system_msg = system_msg[prefix_start + len(prefix):]
-    suffix = "&lt;|end_of_text|&gt;\n"
-    suffix_start = system_msg.rfind(suffix)
+
+    # Remove prefix and suffix from system_msg
+    suffix_normal = "<|end_of_text|>\n"
+    suffix_escape = html.escape(suffix_normal)
+    suffix_start = -1
+    suffix_normal_start = system_msg.rfind(suffix_normal)
+    suffix_escape_start = system_msg.rfind(suffix_escape)
+    if suffix_normal_start >= 0:
+        # suffix = suffix_normal
+        suffix_start = suffix_normal_start
+    elif suffix_escape_start >= 0:
+        # suffix = suffix_escape
+        suffix_start = suffix_escape_start
     if suffix_start >= 0:
         system_msg = system_msg[:suffix_start]
+
+        # Remove a dummy message from granite 3 result. Granite 4 doesn't render unknown message.
+        suffix2_normal = "<|start_of_role|><|end_of_role|>"
+        suffix2_escape = html.escape(suffix2_normal)
+        if system_msg.endswith(suffix2_normal):
+            system_msg = system_msg.removesuffix(suffix2_normal)
+        elif system_msg.endswith(suffix2_escape):
+            system_msg = system_msg.removesuffix(suffix2_escape)
+
+    # print(f"XXX POST system_msg = XXX{system_msg}XXX")
 
     return system_msg
 
@@ -247,10 +289,11 @@ def build_raft_samples(
 
     # @@@ahoaho XXX
     student_model = cfg.student_model
-    # TODO enable this
-    # is_granitemoehybrid = student_model is not None and is_known_model(student_model, "granitemoehybrid")
-    is_granitemoehybrid = False
-    if is_granitemoehybrid:
+    # is_granite = False
+    is_granite = student_model is not None and is_known_model(student_model, "granite")
+    # is_granitemoehybrid = False
+    is_granitemoehybrid = student_model is not None and is_known_model(student_model, "granitemoehybrid")
+    if is_granite or is_granitemoehybrid:
         chat_template_str = load_tokenizer(student_model).chat_template
         chat_template = jinja2.Environment().from_string(chat_template_str)
 
@@ -326,8 +369,8 @@ def build_raft_samples(
         }
 
         # @@@ahoaho XXX
-        if is_granitemoehybrid:
-            system_msg = render_system_msg(documents=documents, chat_template=chat_template)
+        if is_granite or is_granitemoehybrid:
+            system_msg = render_system_message_granite(documents=documents, chat_template=chat_template)
             raft_record["system"] = system_msg
             raft_record["context"] = []
         else:
