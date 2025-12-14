@@ -157,7 +157,7 @@ def render_system_message_granite(documents: list[dict], chat_template: jinja2.e
 
     # print(f"XXX PRE system_msg = XXX{system_msg}XXX")
 
-    # Remove prefix and suffix from system_msg
+    # Remove prefix from system_msg
     # granite 3 uses normal but granite 4 uses escape.
     prefix_normal = "<|start_of_role|>system<|end_of_role|>"
     prefix_escape = html.escape(prefix_normal)
@@ -173,7 +173,24 @@ def render_system_message_granite(documents: list[dict], chat_template: jinja2.e
     if prefix_start >= 0:
         system_msg = system_msg[prefix_start + len(prefix):]
 
-    # Remove prefix and suffix from system_msg
+    # Remove a dummy message from granite 3 result. Granite 4 doesn't render unknown message.
+    # granite 3 uses normal but granite 4 uses escape.
+    dummy_normal = "<|start_of_role|><|end_of_role|><|end_of_text|>\n"
+    dummy_escape = html.escape(dummy_normal)
+    dummy_start = -1
+    dummy_normal_start = system_msg.rfind(dummy_normal)
+    dummy_escape_start = system_msg.rfind(dummy_escape)
+    if dummy_normal_start >= 0:
+        # dummy = dummy_normal
+        dummy_start = dummy_normal_start
+    elif dummy_escape_start >= 0:
+        # dummy = dummy_escape
+        dummy_start = dummy_escape_start
+    if dummy_start >= 0:
+        system_msg = system_msg[:dummy_start]
+
+    # Remove suffix from system_msg
+    # granite 3 uses normal but granite 4 uses escape.
     suffix_normal = "<|end_of_text|>\n"
     suffix_escape = html.escape(suffix_normal)
     suffix_start = -1
@@ -187,14 +204,6 @@ def render_system_message_granite(documents: list[dict], chat_template: jinja2.e
         suffix_start = suffix_escape_start
     if suffix_start >= 0:
         system_msg = system_msg[:suffix_start]
-
-        # Remove a dummy message from granite 3 result. Granite 4 doesn't render unknown message.
-        suffix2_normal = "<|start_of_role|><|end_of_role|>"
-        suffix2_escape = html.escape(suffix2_normal)
-        if system_msg.endswith(suffix2_normal):
-            system_msg = system_msg.removesuffix(suffix2_normal)
-        elif system_msg.endswith(suffix2_escape):
-            system_msg = system_msg.removesuffix(suffix2_escape)
 
     # print(f"XXX POST system_msg = XXX{system_msg}XXX")
 
