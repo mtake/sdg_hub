@@ -384,8 +384,8 @@ raft_samples = raft_samples.map(build_messages).remove_columns(
 dsets += [raft_samples]
 
 # %%
-if False:
-    fp = "<Instruction/Skills dataset>"  # TODO: Replace with huggingface dataset path once its uploaded
+fp = os.getenv("SKILLS_DATA_PATH")  # TODO: Replace with huggingface dataset path once its uploaded
+if fp is not None:
     skills = load_dataset("json", data_files=fp, split="train").remove_columns(
         ["metadata", "id"]
     )
