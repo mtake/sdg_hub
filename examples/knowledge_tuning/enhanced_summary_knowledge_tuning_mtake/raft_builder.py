@@ -147,7 +147,7 @@ def render_system_message_granite(documents: list[dict], chat_template: jinja2.e
     render_dict['documents'] = documents
 
     messages = [
-        {"role": "", "content": ""},  # a dummy message with empty role
+        {"role": "", "content": ""},  # a dummy message with an empty role. required for granite 4
     ]
     render_dict['messages'] = messages
 
@@ -173,7 +173,7 @@ def render_system_message_granite(documents: list[dict], chat_template: jinja2.e
     if prefix_start >= 0:
         system_msg = system_msg[prefix_start + len(prefix):]
 
-    # Remove a dummy message from granite 3 result. Granite 4 doesn't render unknown message.
+    # Remove a trailing dummy message from granite 3 result. Granite 4 doesn't render unknown message.
     # granite 3 uses normal but granite 4 uses escape.
     dummy_normal = "<|start_of_role|><|end_of_role|><|end_of_text|>\n"
     dummy_escape = html.escape(dummy_normal)
