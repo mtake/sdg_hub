@@ -13,6 +13,7 @@ from pydantic import (
     ConfigDict,
     Field,
     PrivateAttr,
+    SecretStr,
     field_validator,
     model_validator,
 )
@@ -793,7 +794,10 @@ class Flow(BaseModel):
         if api_base is not None:
             config_params["api_base"] = api_base
         if api_key is not None:
-            config_params["api_key"] = api_key
+            # Convert string api_key to SecretStr for automatic redaction in logs
+            config_params["api_key"] = (
+                SecretStr(api_key) if isinstance(api_key, str) else api_key
+            )
 
         # Add any additional kwargs (temperature, max_tokens, etc.)
         config_params.update(kwargs)
@@ -855,6 +859,7 @@ class Flow(BaseModel):
 
         if modified_count > 0:
             # Enhanced logging showing what was configured
+            # Note: SecretStr values automatically display as '**********' in logs
             param_summary = []
             for param_name, param_value in config_params.items():
                 if param_name == "model":
