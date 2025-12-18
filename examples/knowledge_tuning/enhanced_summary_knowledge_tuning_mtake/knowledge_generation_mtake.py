@@ -256,6 +256,7 @@ if save_freq == 0:
     save_freq = None
 max_concurrency = int(os.getenv("MAX_CONCURRENCY", "50"))
 save_data_path = os.getenv("OUTPUT_DATA_FOLDER", "")
+checkpoint_dir = f"{save_data_path}_ckpt"
 
 # %%
 # Generate data for extractive summary
@@ -276,7 +277,7 @@ else:
     runtime_params = {"gen_extractive_summary": {"n": number_of_summaries}}
 
 extractive_summary_generated_data = flow.generate(
-    quality_corpus, runtime_params=runtime_params, save_freq=save_freq, max_concurrency=max_concurrency
+    quality_corpus, runtime_params=runtime_params, checkpoint_dir=checkpoint_dir, save_freq=save_freq, max_concurrency=max_concurrency
 )
 
 os.makedirs(os.path.join(save_data_path, "extractive_summary"), exist_ok=True)
