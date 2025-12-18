@@ -206,9 +206,9 @@ mixtral_short_name = "mixtral"
 
 # %%
 # @@@ahoaho XXX
-# DEFAULT_MODEL = phi4_short_name
+DEFAULT_MODEL = phi4_short_name
 # DEFAULT_MODEL = mistral_short_name
-DEFAULT_MODEL = gptoss_short_name
+# DEFAULT_MODEL = gptoss_short_name  # FlowValidationError: Block 'parse_atomic_facts' execution failed: Block 'parse_atomic_facts' produced empty dataset
 
 short_name = os.getenv("MODEL", DEFAULT_MODEL)
 
