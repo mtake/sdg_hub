@@ -207,7 +207,8 @@ mixtral_short_name = "mixtral"
 # %%
 # @@@ahoaho XXX
 # DEFAULT_MODEL = phi4_short_name
-DEFAULT_MODEL = mistral_short_name
+# DEFAULT_MODEL = mistral_short_name
+DEFAULT_MODEL = gptoss_short_name
 
 short_name = os.getenv("MODEL", DEFAULT_MODEL)
 
