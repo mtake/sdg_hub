@@ -256,141 +256,151 @@ if save_freq == 0:
     save_freq = None
 max_concurrency = int(os.getenv("MAX_CONCURRENCY", "50"))
 save_data_path = os.getenv("OUTPUT_DATA_FOLDER", "")
-checkpoint_dir = f"{save_data_path}_ckpt"
+checkpoint_path = f"{save_data_path}_ckpt"
 
 # %%
-# Generate data for extractive summary
-flow_name = "Japanese Extractive Summary Knowledge Tuning Dataset Generation Flow"
-flow_path = FlowRegistry.get_flow_path(flow_name)
-flow = Flow.from_yaml(flow_path)
-
-# Set model configuration
-flow = set_model_config(flow)
-# Generate data for extractive summary
-if enable_reasoning:
-    # Increase max tokens to accommodate reasoning content
-    runtime_params = {
-        "question_generation": {"max_tokens": 1024},
-        "gen_extractive_summary": {"n": number_of_summaries, "max_tokens": 6000},
-    }
-else:
-    runtime_params = {"gen_extractive_summary": {"n": number_of_summaries}}
-
-extractive_summary_generated_data = flow.generate(
-    quality_corpus, runtime_params=runtime_params, checkpoint_dir=checkpoint_dir, save_freq=save_freq, max_concurrency=max_concurrency
-)
-
-os.makedirs(os.path.join(save_data_path, "extractive_summary"), exist_ok=True)
-
-extractive_summary_generated_data.to_json(
-    os.path.join(save_data_path, "extractive_summary", "gen.jsonl"),
-    orient="records",
-    lines=True,
-    force_ascii=False,
-)
-
-print(f"✓ Extractive summary: {len(extractive_summary_generated_data)} records")
-
-print(f"✓ Columns: {list(extractive_summary_generated_data.columns.tolist())}")
+skip_extractive_summary = False
+skip_detailed_summary = False
+skip_key_facts_to_qa = False
+skip_document_based_qa = False
 
 # %%
-# Generate similar data for Detailed Summary
-flow_name = "Japanese Detailed Summary Knowledge Tuning Dataset Generation Flow"
-flow_path = FlowRegistry.get_flow_path(flow_name)
-flow = Flow.from_yaml(flow_path)
+if not skip_extractive_summary:
+    # Generate data for extractive summary
+    flow_name = "Japanese Extractive Summary Knowledge Tuning Dataset Generation Flow"
+    flow_path = FlowRegistry.get_flow_path(flow_name)
+    flow = Flow.from_yaml(flow_path)
 
-# Set model configuration
-flow = set_model_config(flow)
+    # Set model configuration
+    flow = set_model_config(flow)
+    # Generate data for extractive summary
+    if enable_reasoning:
+        # Increase max tokens to accommodate reasoning content
+        runtime_params = {
+            "question_generation": {"max_tokens": 1024},
+            "gen_extractive_summary": {"n": number_of_summaries, "max_tokens": 6000},
+        }
+    else:
+        runtime_params = {"gen_extractive_summary": {"n": number_of_summaries}}
 
-if enable_reasoning:
-    # Increase max tokens to accommodate reasoning content
-    runtime_params = {
-        "question_generation": {"max_tokens": 1024},
-        "gen_detailed_summary": {"n": number_of_summaries, "max_tokens": 6000},
-    }
-else:
-    runtime_params = {"gen_detailed_summary": {"n": number_of_summaries}}
-# Generate data for detailed summary
-detailed_summary_generated_data = flow.generate(
-    quality_corpus, runtime_params=runtime_params, save_freq=save_freq, max_concurrency=max_concurrency
-)
+    extractive_summary_generated_data = flow.generate(
+        quality_corpus, runtime_params=runtime_params, checkpoint_dir=os.path.join(checkpoint_path, "extractive_summary"), save_freq=save_freq, max_concurrency=max_concurrency
+    )
 
-os.makedirs(os.path.join(save_data_path, "detailed_summary"), exist_ok=True)
+    os.makedirs(os.path.join(save_data_path, "extractive_summary"), exist_ok=True)
 
-detailed_summary_generated_data.to_json(
-    os.path.join(save_data_path, "detailed_summary", "gen.jsonl"),
-    orient="records",
-    lines=True,
-    force_ascii=False,
-)
+    extractive_summary_generated_data.to_json(
+        os.path.join(save_data_path, "extractive_summary", "gen.jsonl"),
+        orient="records",
+        lines=True,
+        force_ascii=False,
+    )
 
-print(f"✓ Detailed summary: {len(detailed_summary_generated_data)} records")
+    print(f"✓ Extractive summary: {len(extractive_summary_generated_data)} records")
 
-print(f"✓ Columns: {list(detailed_summary_generated_data.columns.tolist())}")
-
-# %%
-# Generate similar data for key facts
-flow_name = "Japanese Key Facts Knowledge Tuning Dataset Generation Flow"
-flow_path = FlowRegistry.get_flow_path(flow_name)
-flow = Flow.from_yaml(flow_path)
-
-# Set model configuration
-flow = set_model_config(flow)
-runtime_params = {}
-if enable_reasoning:
-    # Increase max tokens for Question Generation to accommodate reasoning content
-    runtime_params = {
-        "generate_key_fact_qa": {"max_tokens": 6000},
-    }
-
-# Generate data for key facts summary
-key_facts_generated_data = flow.generate(
-    quality_corpus, runtime_params=runtime_params, save_freq=save_freq, max_concurrency=max_concurrency
-)
-
-os.makedirs(os.path.join(save_data_path, "key_facts_to_qa"), exist_ok=True)
-
-key_facts_generated_data.to_json(
-    os.path.join(save_data_path, "key_facts_to_qa", "gen.jsonl"),
-    orient="records",
-    lines=True,
-    force_ascii=False,
-)
-
-print(f"✓ Key facts: {len(key_facts_generated_data)} records")
-
-print(f"✓ Columns: {list(key_facts_generated_data.columns.tolist())}")
+    print(f"✓ Columns: {list(extractive_summary_generated_data.columns.tolist())}")
 
 # %%
-flow_name = "Japanese Document Based Knowledge Tuning Dataset Generation Flow"
-flow_path = FlowRegistry.get_flow_path(flow_name)
-flow = Flow.from_yaml(flow_path)
+if not skip_detailed_summary:
+    # Generate similar data for Detailed Summary
+    flow_name = "Japanese Detailed Summary Knowledge Tuning Dataset Generation Flow"
+    flow_path = FlowRegistry.get_flow_path(flow_name)
+    flow = Flow.from_yaml(flow_path)
 
-# Set model configuration
-flow = set_model_config(flow)
-runtime_params = {}
-if enable_reasoning:
-    # Increase max tokens to accommodate reasoning content
-    runtime_params = {
-        "question_generation": {"max_tokens": 2048},
-    }
+    # Set model configuration
+    flow = set_model_config(flow)
 
-document_based_generated_data = flow.generate(
-    quality_corpus, runtime_params=runtime_params, save_freq=save_freq, max_concurrency=max_concurrency
-)
+    if enable_reasoning:
+        # Increase max tokens to accommodate reasoning content
+        runtime_params = {
+            "question_generation": {"max_tokens": 1024},
+            "gen_detailed_summary": {"n": number_of_summaries, "max_tokens": 6000},
+        }
+    else:
+        runtime_params = {"gen_detailed_summary": {"n": number_of_summaries}}
+    # Generate data for detailed summary
+    detailed_summary_generated_data = flow.generate(
+        quality_corpus, runtime_params=runtime_params, checkpoint_dir=os.path.join(checkpoint_path, "detailed_summary"), save_freq=save_freq, max_concurrency=max_concurrency
+    )
 
-os.makedirs(os.path.join(save_data_path, "document_based_qa"), exist_ok=True)
+    os.makedirs(os.path.join(save_data_path, "detailed_summary"), exist_ok=True)
 
-document_based_generated_data.to_json(
-    os.path.join(save_data_path, "document_based_qa", "gen.jsonl"),
-    orient="records",
-    lines=True,
-    force_ascii=False,
-)
+    detailed_summary_generated_data.to_json(
+        os.path.join(save_data_path, "detailed_summary", "gen.jsonl"),
+        orient="records",
+        lines=True,
+        force_ascii=False,
+    )
 
-print(f"✓ Document based: {len(document_based_generated_data)} records")
+    print(f"✓ Detailed summary: {len(detailed_summary_generated_data)} records")
 
-print(f"✓ Columns: {list(document_based_generated_data.columns.tolist())}")
+    print(f"✓ Columns: {list(detailed_summary_generated_data.columns.tolist())}")
+
+# %%
+if not skip_key_facts_to_qa:
+    # Generate similar data for key facts
+    flow_name = "Japanese Key Facts Knowledge Tuning Dataset Generation Flow"
+    flow_path = FlowRegistry.get_flow_path(flow_name)
+    flow = Flow.from_yaml(flow_path)
+
+    # Set model configuration
+    flow = set_model_config(flow)
+    runtime_params = {}
+    if enable_reasoning:
+        # Increase max tokens for Question Generation to accommodate reasoning content
+        runtime_params = {
+            "generate_key_fact_qa": {"max_tokens": 6000},
+        }
+
+    # Generate data for key facts summary
+    key_facts_generated_data = flow.generate(
+        quality_corpus, runtime_params=runtime_params, checkpoint_dir=os.path.join(checkpoint_path, "key_facts_to_qa"), save_freq=save_freq, max_concurrency=max_concurrency
+    )
+
+    os.makedirs(os.path.join(save_data_path, "key_facts_to_qa"), exist_ok=True)
+
+    key_facts_generated_data.to_json(
+        os.path.join(save_data_path, "key_facts_to_qa", "gen.jsonl"),
+        orient="records",
+        lines=True,
+        force_ascii=False,
+    )
+
+    print(f"✓ Key facts: {len(key_facts_generated_data)} records")
+
+    print(f"✓ Columns: {list(key_facts_generated_data.columns.tolist())}")
+
+# %%
+if not skip_document_based_qa:
+    flow_name = "Japanese Document Based Knowledge Tuning Dataset Generation Flow"
+    flow_path = FlowRegistry.get_flow_path(flow_name)
+    flow = Flow.from_yaml(flow_path)
+
+    # Set model configuration
+    flow = set_model_config(flow)
+    runtime_params = {}
+    if enable_reasoning:
+        # Increase max tokens to accommodate reasoning content
+        runtime_params = {
+            "question_generation": {"max_tokens": 2048},
+        }
+
+    document_based_generated_data = flow.generate(
+        quality_corpus, runtime_params=runtime_params, checkpoint_dir=os.path.join(checkpoint_path, "document_based_qa"), save_freq=save_freq, max_concurrency=max_concurrency
+    )
+
+    os.makedirs(os.path.join(save_data_path, "document_based_qa"), exist_ok=True)
+
+    document_based_generated_data.to_json(
+        os.path.join(save_data_path, "document_based_qa", "gen.jsonl"),
+        orient="records",
+        lines=True,
+        force_ascii=False,
+    )
+
+    print(f"✓ Document based: {len(document_based_generated_data)} records")
+
+    print(f"✓ Columns: {list(document_based_generated_data.columns.tolist())}")
 
 # %% [markdown]
 # 🎉 You now have all three four of document augmentations (detailed summaries, extractive summaries, key facts and document based) along with their corresponding QA pairs.
