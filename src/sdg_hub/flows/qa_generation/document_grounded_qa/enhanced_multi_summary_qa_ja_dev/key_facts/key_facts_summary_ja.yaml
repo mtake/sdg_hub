@@ -53,7 +53,8 @@
       → The rationale behind hybrid models is to retain the positives (flexibility, satisfaction) while mitigating the negatives (isolation, miscommunication).
     ### End
 
-    Now it's your turn breakdown following snippet from article about {{domain}} into atomic facts following similar style as above examples
+    Now it's your turn breakdown following snippet from article about {{domain}} into atomic facts following similar style as above examples.
+    Output the response in Japanese.
     ### Passage
     {{document_outline}}
     {{document}}
