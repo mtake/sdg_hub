@@ -9,7 +9,7 @@
     2. Break down compound sentences into atomic facts.
     3. First list the key facts.
     4. Then, provide each fact with enough context from the passage so that a reader can clearly understand how the fact connects to the original text.
-    5. Follow the format of the examples below.
+    5. Exactly follow the format of the examples below.
 
     To help you understand the task, here is an example:
 
@@ -53,7 +53,7 @@
       → The rationale behind hybrid models is to retain the positives (flexibility, satisfaction) while mitigating the negatives (isolation, miscommunication).
     ### End
 
-    Now it's your turn breakdown following snippet from article about {{domain}} into atomic facts following similar style as above examples.
+    Now it's your turn to break down the following snippet from an article about {{domain}} into atomic facts, following the same format as the above examples.
     Output the response in Japanese.
     ### Passage
     {{document_outline}}
