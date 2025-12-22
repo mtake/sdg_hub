@@ -60,12 +60,6 @@ blocks:
     block_name: parse_atomic_facts
     input_cols: extract_atomic_facts_content
     output_cols: atomic_facts
-    # @@@ahoaho XXX
-    # start_tags:
-    # - '### Key Facts With Context'
-    # end_tags:
-    # - ''
-    # - '### **Key Facts with Context（要点事実とその文脈）**'
     parsing_pattern: '### (?:\*\*)?Key Facts [wW]ith Context.*?(?:\*\*)?[\s\S]*\Z'
 - block_type: TextParserBlock
   block_config:
