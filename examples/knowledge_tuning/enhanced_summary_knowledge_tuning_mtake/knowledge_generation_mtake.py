@@ -353,6 +353,8 @@ if not skip_key_facts_to_qa:
     if enable_reasoning:
         # Increase max tokens for Question Generation to accommodate reasoning content
         runtime_params = {
+            # @@@ahoaho XXX
+            # "gen_atomic_facts": {"max_tokens": 6000},
             "generate_key_fact_qa": {"max_tokens": 6000},
         }
 
