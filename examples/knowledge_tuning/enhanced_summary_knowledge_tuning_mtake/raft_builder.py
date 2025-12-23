@@ -119,6 +119,13 @@ def strftime_now(fmt: str) -> str:
     return datetime.now().strftime(fmt)
 
 
+import json
+from markupsafe import Markup
+
+def tojson_allow_non_ascii(obj, **kwargs):
+    return Markup(json.dumps(obj, ensure_ascii=False, **kwargs))
+
+
 import html
 import jinja2
 
@@ -304,7 +311,9 @@ def build_raft_samples(
     is_granitemoehybrid = student_model is not None and is_known_model(student_model, "granitemoehybrid")
     if is_granite or is_granitemoehybrid:
         chat_template_str = load_tokenizer(student_model).chat_template
-        chat_template = jinja2.Environment().from_string(chat_template_str)
+        jinja_env = jinja2.Environment()
+        jinja_env.filters['tojson'] = tojson_allow_non_ascii  # mainly for granite 4
+        chat_template = jinja_env.from_string(chat_template_str)
 
     for ex in data:
         q = (ex.get(question_field) or "").strip()
