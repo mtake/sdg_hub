@@ -12,6 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ========================
 # Chunking utilities
 # ========================
+# @@@ahoaho TODO character-based chunking
 def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
     """
     Splits long text into chunks with overlap.
@@ -34,6 +35,7 @@ def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
 
+# @@@ahoaho TODO multilingual dense vectorizer
 def take_best_sentence(context: str, query: str) -> str:
     """Extract a plausible supportive sentence from context for quoting."""
     if not context:
@@ -289,6 +291,7 @@ def build_raft_samples(
         return []
 
     # ---- Step 2: Fit TF-IDF retriever ----
+    # @@@ahoaho TODO multilingual dense vectorizer
     vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_df=0.98)
     X = vect.fit_transform([c["text"] for c in all_chunks])
 
