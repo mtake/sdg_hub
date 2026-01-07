@@ -7,6 +7,7 @@ import asyncio
 
 from litellm import acompletion, completion
 from pydantic import ConfigDict, Field, SecretStr, field_validator
+from tqdm.asyncio import tqdm_asyncio
 import litellm
 
 # Third Party
@@ -502,7 +503,9 @@ class LLMChatBlock(BaseBlock):
                     for messages in messages_list
                 ]
 
-            responses = await asyncio.gather(*tasks)
+            responses = await tqdm_asyncio.gather(
+                *tasks, desc=self.block_name, unit="req"
+            )
             return responses
 
         except Exception as e:
