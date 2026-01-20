@@ -46,8 +46,8 @@ def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]
 
 
 # @@@ahoaho XXX sentence split for Japanese
-# _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
-_SENT_SPLIT = re.compile(r"(?<=[。．！？.!?])\s+")
+_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")  # for English
+# _SENT_SPLIT = re.compile(r"(?<=[。．！？])\s+")  # for Japanese
 
 
 def take_best_sentence(context: str, query: str) -> str:
