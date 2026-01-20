@@ -8,11 +8,22 @@ from datasets import Dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# @@@ahoaho XXX tokenize for Japanese
+# See https://challenge-pg.com/2024/11/09/python-janome/
+# See https://qiita.com/kiyuka/items/3de09e313a75248ca029#appendix2analyzer%E3%81%A7%E5%BD%A2%E6%85%8B%E7%B4%A0%E8%A7%A3%E6%9E%90%E3%82%82%E3%81%99%E3%82%8B
+# from janome.tokenizer import Tokenizer
+# tk = Tokenizer()  # for Japanese
+# def analyzer(x):  # for Japanese
+#     return list(tk.tokenize(x, wakati=True))
+#     # return [token.surface for token in tk.tokenize(x)]
+analyzer = "word"  # for English
+
+# splitter = analyzer  # for Japanese
+splitter = lambda x : x.split()  # for English
 
 # ========================
 # Chunking utilities
 # ========================
-# @@@ahoaho TODO character-based chunking
 def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
     """
     Splits long text into chunks with overlap.
@@ -20,7 +31,9 @@ def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]
     """
     if not text:
         return []
-    words = text.split()
+    # @@@ahoaho XXX tokenize for Japanese
+    # words = text.split()
+    words = splitter(text)
     chunks, step = [], max(1, max_tokens - overlap)
     for start in range(0, len(words), step):
         window = words[start : start + max_tokens]
@@ -32,10 +45,11 @@ def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]
     return chunks
 
 
-_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+# @@@ahoaho XXX sentence split for Japanese
+# _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_SENT_SPLIT = re.compile(r"(?<=[。．！？.!?])\s+")
 
 
-# @@@ahoaho TODO multilingual dense vectorizer
 def take_best_sentence(context: str, query: str) -> str:
     """Extract a plausible supportive sentence from context for quoting."""
     if not context:
@@ -43,7 +57,9 @@ def take_best_sentence(context: str, query: str) -> str:
     sents = _SENT_SPLIT.split(context.strip())
     if not sents:
         return context[:400]
-    vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1)
+    # @@@ahoaho XXX tokenize for Japanese
+    # vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1)
+    vect = TfidfVectorizer(analyzer=analyzer, ngram_range=(1, 2), min_df=1)
     X = vect.fit_transform(sents + [query])
     sims = cosine_similarity(X[:-1], X[-1])
     idx = int(np.argmax(sims))
@@ -291,8 +307,9 @@ def build_raft_samples(
         return []
 
     # ---- Step 2: Fit TF-IDF retriever ----
-    # @@@ahoaho TODO multilingual dense vectorizer
-    vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_df=0.98)
+    # @@@ahoaho XXX tokenize for Japanese
+    # vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_df=0.98)
+    vect = TfidfVectorizer(analyzer=analyzer, ngram_range=(1, 2), min_df=1, max_df=0.98)
     X = vect.fit_transform([c["text"] for c in all_chunks])
 
     def retrieve_k(query: str, k: int) -> List[int]:
