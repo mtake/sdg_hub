@@ -8,32 +8,31 @@ from datasets import Dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# @@@ahoaho XXX tokenize for Japanese
-# See https://challenge-pg.com/2024/11/09/python-janome/
-# See https://qiita.com/kiyuka/items/3de09e313a75248ca029#appendix2analyzer%E3%81%A7%E5%BD%A2%E6%85%8B%E7%B4%A0%E8%A7%A3%E6%9E%90%E3%82%82%E3%81%99%E3%82%8B
-# from janome.tokenizer import Tokenizer
-# tk = Tokenizer()  # for Japanese
-# def analyzer(x):  # for Japanese
-#     return list(tk.tokenize(x, wakati=True))
-#     # return [token.surface for token in tk.tokenize(x)]
-analyzer = "word"  # for English
 
-# splitter = analyzer  # for Japanese
-splitter = lambda x : x.split()  # for English
+#
+# The default (English) splitter/analyzer
+#
+default_analyzer = "word"
+default_word_splitter = lambda x : x.split()
+_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+default_sent_splitter = lambda x : _SENT_SPLIT.split(x)
+
 
 # ========================
 # Chunking utilities
 # ========================
-def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
+# @@@ahoaho XXX ZZZ
+# def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
+def chunk_text(text: str, word_splitter, max_tokens: int = 400, overlap: int = 60) -> List[str]:
     """
     Splits long text into chunks with overlap.
     Token proxy = words (fast approximation).
     """
     if not text:
         return []
-    # @@@ahoaho XXX tokenize for Japanese
+    # @@@ahoaho XXX ZZZ
     # words = text.split()
-    words = splitter(text)
+    words = word_splitter(text)
     chunks, step = [], max(1, max_tokens - overlap)
     for start in range(0, len(words), step):
         window = words[start : start + max_tokens]
@@ -45,19 +44,18 @@ def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]
     return chunks
 
 
-# @@@ahoaho XXX sentence split for Japanese
-_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")  # for English
-# _SENT_SPLIT = re.compile(r"(?<=[。．！？])\s+")  # for Japanese
-
-
-def take_best_sentence(context: str, query: str) -> str:
+# @@@ahoaho XXX ZZZ
+# def take_best_sentence(context: str, query: str) -> str:
+def take_best_sentence(context: str, query: str, sent_splitter, analyzer) -> str:
     """Extract a plausible supportive sentence from context for quoting."""
     if not context:
         return ""
-    sents = _SENT_SPLIT.split(context.strip())
+    # @@@ahoaho XXX ZZZ
+    # sents = _SENT_SPLIT.split(context.strip())
+    sents = sent_splitter(context.strip())
     if not sents:
         return context[:400]
-    # @@@ahoaho XXX tokenize for Japanese
+    # @@@ahoaho XXX ZZZ
     # vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1)
     vect = TfidfVectorizer(analyzer=analyzer, ngram_range=(1, 2), min_df=1)
     X = vect.fit_transform(sents + [query])
@@ -67,7 +65,9 @@ def take_best_sentence(context: str, query: str) -> str:
 
 
 def default_answer_builder(
-    example: Dict[str, Any], oracle_chunk: str
+    # @@@ahoaho XXX
+    # example: Dict[str, Any], oracle_chunk: str
+    example: Dict[str, Any], oracle_chunk: str, sent_splitter, analyzer
 ) -> Tuple[str, str]:
     """
     Build (support_quote, final_answer).
@@ -86,7 +86,9 @@ def default_answer_builder(
                     final_answer = content.strip()
                     break
 
-    support_quote = take_best_sentence(oracle_chunk, q)
+    # @@@ahoaho XXX ZZZ
+    # support_quote = take_best_sentence(oracle_chunk, q)
+    support_quote = take_best_sentence(oracle_chunk, q, sent_splitter, analyzer)
 
     if not final_answer:
         print("No final answer found")
@@ -256,6 +258,7 @@ class RAFTConfig:
     seed: int = 42
     # @@@ahoaho XXX
     student_model: Optional[str] = None
+    language: Optional[str] = None
 
 
 # ========================
@@ -265,7 +268,9 @@ def build_raft_samples(
     hf_dataset,
     cfg: RAFTConfig = RAFTConfig(),
     answer_builder: Callable[
-        [Dict[str, Any], str], Tuple[str, str]
+        # @@@ahoaho XXX
+        # [Dict[str, Any], str], Tuple[str, str]
+        [Dict[str, Any], str, Any, Any], Tuple[str, str]
     ] = default_answer_builder,
     text_field: str = "document",
     question_field: str = "question",
@@ -274,6 +279,32 @@ def build_raft_samples(
     """
     Builds RAFT-style training samples from your dataset.
     """
+
+    # @@@ahoaho XXX
+    #
+    # Define language-specific sentence and word splitters
+    #
+    if cfg.language == "ja":
+        # See https://challenge-pg.com/2024/11/09/python-janome/
+        # See https://qiita.com/kiyuka/items/3de09e313a75248ca029#appendix2analyzer%E3%81%A7%E5%BD%A2%E6%85%8B%E7%B4%A0%E8%A7%A3%E6%9E%90%E3%82%82%E3%81%99%E3%82%8B
+        from janome.tokenizer import Tokenizer
+
+        tk = Tokenizer()
+
+        def analyzer(x: str) -> list[str]:
+            return list(tk.tokenize(x, wakati=True))
+            # return [token.surface for token in tk.tokenize(x)]
+
+        word_splitter = analyzer
+        _SENT_SPLIT = re.compile(r"(?<=[。．！？])\s+")
+        sent_splitter = lambda x : _SENT_SPLIT.split(x)
+    else:
+        # The default is for English
+        analyzer = "word"
+        word_splitter = lambda x : x.split()
+        _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+        sent_splitter = lambda x : _SENT_SPLIT.split(x)
+
     rng = np.random.default_rng(cfg.seed)
 
     # ---- Step 1: Chunk all docs ----
@@ -297,7 +328,9 @@ def build_raft_samples(
     for ex in data:
         doc_text = (ex.get(text_field) or "").strip()
         doc_id = doc_id_for(ex)
-        chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
+        # @@@ahoaho XXX ZZZ
+        # chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
+        chunks = chunk_text(doc_text, word_splitter, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
         for j, ch in enumerate(chunks):
             gid = len(all_chunks)
             all_chunks.append({"doc_id": doc_id, "passage_id": j, "text": ch})
@@ -307,7 +340,7 @@ def build_raft_samples(
         return []
 
     # ---- Step 2: Fit TF-IDF retriever ----
-    # @@@ahoaho XXX tokenize for Japanese
+    # @@@ahoaho XXX ZZZ
     # vect = TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_df=0.98)
     vect = TfidfVectorizer(analyzer=analyzer, ngram_range=(1, 2), min_df=1, max_df=0.98)
     X = vect.fit_transform([c["text"] for c in all_chunks])
@@ -382,7 +415,9 @@ def build_raft_samples(
             if oracle_gid is not None
             else documents[0]["text"]
         )
-        support_quote, final_answer = answer_builder(ex, oracle_chunk)
+        # @@@ahoaho XXX ZZZ
+        # support_quote, final_answer = answer_builder(ex, oracle_chunk)
+        support_quote, final_answer = answer_builder(ex, oracle_chunk, sent_splitter, analyzer)
 
         quote_wrapped = f"{cfg.quote_begin} {support_quote} {cfg.quote_end}"
         cot = "Reasoning: The quote supports the answer because ..."
