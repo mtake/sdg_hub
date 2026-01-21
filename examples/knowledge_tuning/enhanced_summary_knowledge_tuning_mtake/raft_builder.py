@@ -13,9 +13,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 # The default (English) splitter/analyzer
 #
 default_analyzer = "word"
-default_word_splitter = lambda x : x.split()
+default_word_split = lambda x : x.split()
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
-default_sent_splitter = lambda x : _SENT_SPLIT.split(x)
+default_sent_split = lambda x : _SENT_SPLIT.split(x)
 
 
 # ========================
@@ -23,7 +23,9 @@ default_sent_splitter = lambda x : _SENT_SPLIT.split(x)
 # ========================
 # @@@ahoaho XXX ZZZ
 # def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
-def chunk_text(text: str, word_splitter, max_tokens: int = 400, overlap: int = 60) -> List[str]:
+def chunk_text(
+    text: str, max_tokens: int = 400, overlap: int = 60, word_split = default_word_split
+) -> List[str]:
     """
     Splits long text into chunks with overlap.
     Token proxy = words (fast approximation).
@@ -32,7 +34,7 @@ def chunk_text(text: str, word_splitter, max_tokens: int = 400, overlap: int = 6
         return []
     # @@@ahoaho XXX ZZZ
     # words = text.split()
-    words = word_splitter(text)
+    words = word_split(text)
     chunks, step = [], max(1, max_tokens - overlap)
     for start in range(0, len(words), step):
         window = words[start : start + max_tokens]
@@ -46,13 +48,15 @@ def chunk_text(text: str, word_splitter, max_tokens: int = 400, overlap: int = 6
 
 # @@@ahoaho XXX ZZZ
 # def take_best_sentence(context: str, query: str) -> str:
-def take_best_sentence(context: str, query: str, sent_splitter, analyzer) -> str:
+def take_best_sentence(
+    context: str, query: str, sent_split = default_sent_split, analyzer = default_analyzer
+) -> str:
     """Extract a plausible supportive sentence from context for quoting."""
     if not context:
         return ""
     # @@@ahoaho XXX ZZZ
     # sents = _SENT_SPLIT.split(context.strip())
-    sents = sent_splitter(context.strip())
+    sents = sent_split(context.strip())
     if not sents:
         return context[:400]
     # @@@ahoaho XXX ZZZ
@@ -67,7 +71,7 @@ def take_best_sentence(context: str, query: str, sent_splitter, analyzer) -> str
 def default_answer_builder(
     # @@@ahoaho XXX
     # example: Dict[str, Any], oracle_chunk: str
-    example: Dict[str, Any], oracle_chunk: str, sent_splitter, analyzer
+    example: Dict[str, Any], oracle_chunk: str, sent_split = default_sent_split, analyzer = default_analyzer
 ) -> Tuple[str, str]:
     """
     Build (support_quote, final_answer).
@@ -88,7 +92,7 @@ def default_answer_builder(
 
     # @@@ahoaho XXX ZZZ
     # support_quote = take_best_sentence(oracle_chunk, q)
-    support_quote = take_best_sentence(oracle_chunk, q, sent_splitter, analyzer)
+    support_quote = take_best_sentence(oracle_chunk, q, sent_split, analyzer)
 
     if not final_answer:
         print("No final answer found")
@@ -295,15 +299,13 @@ def build_raft_samples(
             return list(tk.tokenize(x, wakati=True))
             # return [token.surface for token in tk.tokenize(x)]
 
-        word_splitter = analyzer
+        word_split = analyzer
         _SENT_SPLIT = re.compile(r"(?<=[。．！？])\s+")
-        sent_splitter = lambda x : _SENT_SPLIT.split(x)
+        sent_split = lambda x : _SENT_SPLIT.split(x)
     else:
-        # The default is for English
-        analyzer = "word"
-        word_splitter = lambda x : x.split()
-        _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
-        sent_splitter = lambda x : _SENT_SPLIT.split(x)
+        analyzer = default_analyzer
+        word_split = default_word_split
+        sent_split = default_sent_split
 
     rng = np.random.default_rng(cfg.seed)
 
@@ -330,7 +332,7 @@ def build_raft_samples(
         doc_id = doc_id_for(ex)
         # @@@ahoaho XXX ZZZ
         # chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
-        chunks = chunk_text(doc_text, word_splitter, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
+        chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap, word_split)
         for j, ch in enumerate(chunks):
             gid = len(all_chunks)
             all_chunks.append({"doc_id": doc_id, "passage_id": j, "text": ch})
@@ -417,7 +419,7 @@ def build_raft_samples(
         )
         # @@@ahoaho XXX ZZZ
         # support_quote, final_answer = answer_builder(ex, oracle_chunk)
-        support_quote, final_answer = answer_builder(ex, oracle_chunk, sent_splitter, analyzer)
+        support_quote, final_answer = answer_builder(ex, oracle_chunk, sent_split, analyzer)
 
         quote_wrapped = f"{cfg.quote_begin} {support_quote} {cfg.quote_end}"
         cot = "Reasoning: The quote supports the answer because ..."
