@@ -9,7 +9,7 @@ local models (vLLM, Ollama), and more.
 # Local
 from .error_handler import ErrorCategory, LLMErrorHandler
 from .llm_chat_block import LLMChatBlock
-from .llm_parser_block import LLMParserBlock
+from .llm_response_extractor_block import LLMParserBlock, LLMResponseExtractorBlock
 from .prompt_builder_block import PromptBuilderBlock
 from .text_parser_block import TextParserBlock
 
@@ -17,7 +17,8 @@ __all__ = [
     "LLMErrorHandler",
     "ErrorCategory",
     "LLMChatBlock",
-    "LLMParserBlock",
+    "LLMParserBlock",  # Deprecated alias for LLMResponseExtractorBlock
+    "LLMResponseExtractorBlock",
     "PromptBuilderBlock",
     "TextParserBlock",
 ]

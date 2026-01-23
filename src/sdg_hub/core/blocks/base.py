@@ -49,6 +49,9 @@ class BaseBlock(BaseModel, ABC):
     block_name: str = Field(
         ..., description="Unique identifier for this block instance"
     )
+    block_type: Optional[str] = Field(
+        None, description="Block type (e.g., 'llm', 'transform', 'parser', 'filtering')"
+    )
     input_cols: Union[str, list[str], dict[str, Any], None] = Field(
         None, description="Input columns: str, list, or dict"
     )
@@ -366,5 +369,5 @@ class BaseBlock(BaseModel, ABC):
         Dict[str, Any]
         """
         config = self.get_config()
-        config["block_type"] = self.__class__.__name__
+        config["block_class"] = self.__class__.__name__
         return config

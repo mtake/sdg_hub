@@ -27,6 +27,8 @@ logger = setup_logger(__name__)
     "Renames columns in a dataset according to a mapping specification",
 )
 class RenameColumnsBlock(BaseBlock):
+    block_type: str = "transform"
+
     """Block for renaming columns in a dataset.
 
     This block renames columns in a dataset according to a mapping specification.
@@ -52,6 +54,16 @@ class RenameColumnsBlock(BaseBlock):
                 "input_cols must be a dictionary mapping old column names to new column names"
             )
         return v
+
+    def model_post_init(self, __context: Any) -> None:
+        """Initialize derived attributes after Pydantic validation."""
+        super().model_post_init(__context) if hasattr(
+            super(), "model_post_init"
+        ) else None
+
+        # Set output_cols to the new column names being created
+        if self.output_cols is None:
+            self.output_cols = list(self.input_cols.values())
 
     def generate(self, samples: pd.DataFrame, **kwargs: Any) -> pd.DataFrame:
         """Generate a dataset with renamed columns.
