@@ -20,6 +20,8 @@ load_dotenv(override=True)
 # Load configuration from environment variables
 exp_folder = os.getenv("OUTPUT_DATA_FOLDER", "generated_output_data")
 student_model = os.getenv("STUDENT_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
+# @@@ahoaho XXX ZZZ
+language = os.getenv("DATA_LANG", "en")
 save_gpt_oss_format = os.getenv("SAVE_GPT_OSS_FORMAT", "false").lower() == "true"
 
 # Parse cut sizes from environment variable
@@ -35,6 +37,8 @@ output_dir = os.path.join(exp_folder, "training_mix")
 
 print(f"Experiment folder: {exp_folder}")
 print(f"Student model: {student_model}")
+# @@@ahoaho XXX ZZZ
+print(f"Data language: {language}")
 print(f"GPT OSS format: {save_gpt_oss_format}")
 print(f"Cut sizes: {cuts}")
 print(f"Q&A pairs per document: {qa_per_doc}")
@@ -367,8 +371,12 @@ upscale_data_size = 1
 
 # @@@ahoaho XXX
 # cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9)
-cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9, student_model=student_model)
-raft_samples = build_raft_samples(processed_knowledge_dataset, cfg)
+cfg = RAFTConfig(k_passages=5, max_tokens_per_chunk=400, p_include_oracle=0.9, student_model=student_model, language=language)
+# @@@ahoaho XXX
+# raft_samples = build_raft_samples(processed_knowledge_dataset, cfg)
+# group_by_doc = None  # NOTE use doc_{raw id} as the document id.
+group_by_doc = "document_outline" # NOTE use document title in document_outline as the document id.
+raft_samples = build_raft_samples(processed_knowledge_dataset, cfg, group_by_doc=group_by_doc)
 raft_samples = raft_samples.map(build_messages).remove_columns(
     [
         "question",
