@@ -259,14 +259,10 @@ save_data_path = os.getenv("OUTPUT_DATA_FOLDER", "")
 checkpoint_path = f"{save_data_path}_ckpt"
 
 # %%
-# @@@ahoaho XXX WIP
-# skip_extractive_summary = False
-skip_extractive_summary = True
-# skip_detailed_summary = False
-skip_detailed_summary = True
+skip_extractive_summary = False
+skip_detailed_summary = False
 skip_key_facts_to_qa = False
-# skip_document_based_qa = False
-skip_document_based_qa = True
+skip_document_based_qa = False
 
 # %%
 if not skip_extractive_summary:
