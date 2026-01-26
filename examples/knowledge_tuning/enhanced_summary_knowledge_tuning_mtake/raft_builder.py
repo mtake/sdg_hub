@@ -14,6 +14,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 #
 default_analyzer = "word"
 default_word_split = lambda x : x.split()
+default_word_join = lambda x : " ".join(x)
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 default_sent_split = lambda x : _SENT_SPLIT.split(x)
 
@@ -24,7 +25,7 @@ default_sent_split = lambda x : _SENT_SPLIT.split(x)
 # @@@ahoaho XXX ZZZ
 # def chunk_text(text: str, max_tokens: int = 400, overlap: int = 60) -> List[str]:
 def chunk_text(
-    text: str, max_tokens: int = 400, overlap: int = 60, word_split = default_word_split
+    text: str, max_tokens: int = 400, overlap: int = 60, word_split = default_word_split, word_join = default_word_join
 ) -> List[str]:
     """
     Splits long text into chunks with overlap.
@@ -40,7 +41,9 @@ def chunk_text(
         window = words[start : start + max_tokens]
         if not window:
             break
-        chunks.append(" ".join(window))
+        # @@@ahoaho XXX ZZZ
+        # chunks.append(" ".join(window))
+        chunks.append(word_join(window))
         if start + max_tokens >= len(words):
             break
     return chunks
@@ -300,11 +303,13 @@ def build_raft_samples(
             # return [token.surface for token in tk.tokenize(x)]
 
         word_split = analyzer
+        word_join = lambda x : "".join(x)
         _SENT_SPLIT = re.compile(r"(?<=[。．！？])\s+")
         sent_split = lambda x : _SENT_SPLIT.split(x)
     else:
         analyzer = default_analyzer
         word_split = default_word_split
+        word_join = default_word_join
         sent_split = default_sent_split
 
     rng = np.random.default_rng(cfg.seed)
@@ -332,7 +337,7 @@ def build_raft_samples(
         doc_id = doc_id_for(ex)
         # @@@ahoaho XXX ZZZ
         # chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap)
-        chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap, word_split)
+        chunks = chunk_text(doc_text, cfg.max_tokens_per_chunk, cfg.chunk_overlap, word_split, word_join)
         for j, ch in enumerate(chunks):
             gid = len(all_chunks)
             all_chunks.append({"doc_id": doc_id, "passage_id": j, "text": ch})
