@@ -9,14 +9,18 @@ on:
     paths:
       - '**/*.md'
       - '.markdownlint-cli2.yaml'
-      - '.github/workflows/docs.yml' # This workflow
+      - '.github/workflows/docs.yml'
   pull_request:
     branches:
       - "main"
     paths:
       - '**/*.md'
       - '.markdownlint-cli2.yaml'
-      - '.github/workflows/docs.yml' # This workflow
+      - '.github/workflows/docs.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   LC_ALL: en_US.UTF-8
@@ -33,11 +37,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Harden Runner"
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
       - name: "Checkout"
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: "Check Markdown documents"
         uses: DavidAnson/markdownlint-cli2-action@07035fd053f7be764496c0f8d8f9f41f98305101 # v22.0.0
         with:

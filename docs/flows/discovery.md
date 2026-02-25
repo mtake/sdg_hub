@@ -24,22 +24,31 @@ The discovery system searches these locations:
 
 ```
 src/sdg_hub/flows/                    # Built-in flows
-├── qa_generation/                    # Question-answer generation
-│   ├── document_grounded_qa/
-│   │   └── multi_summary_qa/
-│   │       └── instructlab/
-│   │           ├── flow.yaml
-│   │           ├── atomic_facts.yaml
-│   │           └── detailed_summary.yaml
-│   └── simple_qa/
-│       └── flow.yaml
-├── text_processing/                  # Text manipulation flows
-│   ├── summarization/
-│   └── classification/
+├── knowledge_infusion/               # Knowledge tuning flows
+│   ├── enhanced_multi_summary_qa/
+│   │   ├── detailed_summary/
+│   │   │   ├── flow.yaml
+│   │   │   └── prompts/
+│   │   ├── extractive_summary/
+│   │   │   ├── flow.yaml
+│   │   │   └── prompts/
+│   │   ├── doc_direct_qa/
+│   │   │   ├── flow.yaml
+│   │   │   └── prompts/
+│   │   └── key_facts/
+│   │       ├── flow.yaml
+│   │       └── prompts/
+│   └── japanese_multi_summary_qa/
+│       ├── flow.yaml
+│       └── prompts/
+├── text_analysis/                    # Text analysis flows
+│   └── structured_insights/
+│       ├── flow.yaml
+│       └── prompts/
 └── evaluation/                       # Quality assessment flows
-    ├── quality_assessment/
-    └── bias_detection/
-
+    └── rag_evaluation/
+        ├── flow.yaml
+        └── prompts/
 ```
 
 ## 📋 Flow Registry Operations
@@ -60,7 +69,7 @@ for flow_name in all_flows:
 
 # Output:
 # Found 3 flows:
-#   • Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning
+#   • Extractive Summary Knowledge Tuning Dataset Generation Flow
 #   • Simple QA Generation Flow
 #   • Document Summarization Flow
 ```
@@ -73,7 +82,7 @@ Access detailed flow metadata and configuration:
 from sdg_hub.core.flow import FlowRegistry, Flow
 
 # Get metadata for a specific flow
-flow_name = "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
+flow_name = "Extractive Summary Knowledge Tuning Dataset Generation Flow"
 metadata = FlowRegistry.get_flow_metadata(flow_name)
 
 if metadata:
@@ -147,19 +156,13 @@ Flows are organized in a logical hierarchy:
 
 ```
 flows/
-├── domain/              # By problem domain
-│   ├── qa_generation/
-│   ├── text_processing/
-│   ├── evaluation/
-│   └── data_preparation/
-├── use_case/            # By specific use case
-│   ├── document_grounded_qa/
-│   ├── conversational_qa/
-│   └── multi_turn_dialogue/
-└── variant/             # By implementation variant
-    ├── instructlab/     # InstructLab-specific
-    ├── simple/          # Simplified version
-    └── advanced/        # Feature-rich version
+├── knowledge_infusion/  # Knowledge tuning and QA generation
+│   ├── enhanced_multi_summary_qa/
+│   └── japanese_multi_summary_qa/
+├── text_analysis/       # Text processing and insights
+│   └── structured_insights/
+└── evaluation/          # Quality assessment flows
+    └── rag_evaluation/
 ```
 
 ### Flow Naming Conventions
@@ -169,8 +172,8 @@ Follow consistent naming patterns:
 ```yaml
 # Good naming examples
 metadata:
-  name: "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning"
-  name: "Simple Text Summarization Flow"  
+  name: "Extractive Summary Knowledge Tuning Dataset Generation Flow"
+  name: "Simple Text Summarization Flow"
   name: "Multi-Turn Dialogue Generation with Context Tracking"
 
 ```
@@ -180,15 +183,22 @@ metadata:
 Organize flows logically:
 
 ```
-qa_generation/                           # Primary domain
-├── document_grounded_qa/                # Specific approach
-│   ├── multi_summary_qa/                # Implementation variant
-│   │   ├── instructlab/                 # Framework-specific
-│   │   │   ├── flow.yaml               # Main flow definition
-│   │   │   ├── README.md               # Flow documentation
-│   │   │   ├── atomic_facts.yaml       # Supporting templates
-│   │   │   ├── detailed_summary.yaml
-│   │   │   └── generate_questions_responses.yaml
+knowledge_infusion/                      # Primary domain
+├── enhanced_multi_summary_qa/           # Enhanced implementation
+│   ├── detailed_summary/
+│   │   ├── flow.yaml                   # Main flow definition
+│   │   └── prompts/                    # Prompt configurations
+│   │       ├── detailed_summary.yaml
+│   │       └── generate_question_list.yaml
+│   └── extractive_summary/
+│       ├── flow.yaml
+│       └── prompts/
+└── japanese_multi_summary_qa/           # Japanese language support
+    ├── flow.yaml
+    ├── README.md                        # Flow documentation
+    └── prompts/
+        ├── atomic_facts_ja.yaml
+        └── detailed_summary_ja.yaml
 ```
 
 ## 🏷️ Flow Categorization and Tagging
@@ -466,6 +476,7 @@ If your new tag represents a common pattern others might use, consider updating 
 
 Master flow discovery and organization:
 
+- **[Flow Translation](translation.md)** - Translate any flow to a target language
 - **[Custom Flows](custom-flows.md)** - Build and organize your own flows
 - **[Flow Overview](overview.md)** - YAML structure and configuration
 - **[Development Guide](../development.md)** - Contribute flows to the ecosystem

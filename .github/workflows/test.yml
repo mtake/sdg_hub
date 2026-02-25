@@ -12,9 +12,8 @@ on:
       - 'src/**/*.py'
       - 'tests/**/*.py'
       - 'pyproject.toml'
-      - 'requirements*.txt'
-      - 'tox.ini'
-      - '.github/workflows/test.yml' # This workflow
+      - 'uv.lock'
+      - '.github/workflows/test.yml'
   pull_request:
     branches:
       - "main"
@@ -23,9 +22,12 @@ on:
       - 'src/**/*.py'
       - 'tests/**/*.py'
       - 'pyproject.toml'
-      - 'requirements*.txt'
-      - 'tox.ini'
-      - '.github/workflows/test.yml' # This workflow
+      - 'uv.lock'
+      - '.github/workflows/test.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   LC_ALL: en_US.UTF-8
@@ -39,7 +41,7 @@ permissions:
 
 jobs:
   test:
-    name: "Unit Tests - ${{ matrix.python }} on ${{ matrix.platform }}"
+    name: "Unit Tests - Python ${{ matrix.python }} on ${{ matrix.platform }}"
     runs-on: "${{ matrix.platform }}"
     strategy:
       matrix:
@@ -53,14 +55,14 @@ jobs:
             platform: "macos-latest"
     steps:
       - name: "Harden Runner"
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+          egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          # https://github.com/actions/checkout/issues/249
+          # Full history needed for setuptools_scm to determine version from git tags
           fetch-depth: 0
 
       - name: Free disk space
@@ -69,42 +71,36 @@ jobs:
 
       - name: Install the expect package
         if: startsWith(matrix.platform, 'ubuntu')
-        run: |
-          sudo apt-get install -y expect
+        run: sudo apt-get install -y expect
 
       - name: Install tools on MacOS
         if: startsWith(matrix.platform, 'macos')
-        run: |
-          brew install expect coreutils bash
+        run: brew install expect coreutils bash
 
-      - name: Setup Python ${{ matrix.python }}
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+      - name: Setup uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
         with:
           python-version: ${{ matrix.python }}
-          cache: pip
-          cache-dependency-path: |
-            **/pyproject.toml
-            **/requirements*.txt
-
-
+          enable-cache: true
 
       - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run unit tests
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox tox-gh>=1.2
+          uv run pytest \
+            --cov=sdg_hub \
+            --cov-report=term \
+            --cov-report=xml:coverage.xml \
+            tests/blocks tests/connectors tests/flow tests/utils \
+            -m "not (examples or slow)"
 
-      - name: Run unit tests with tox
-        run: |
-          tox -e py3-unitcov
-
-
-      
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
-          fail_ci_if_error: true 
+          fail_ci_if_error: false
 
   test-workflow-complete:
     needs: ["test"]

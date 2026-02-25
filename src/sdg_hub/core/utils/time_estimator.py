@@ -30,11 +30,11 @@ def is_llm_using_block(block_info: Dict) -> bool:
 
     Examples
     --------
-    >>> block = {"block_type": "LLMChatBlock", "parameters_used": {"model": "gpt-4"}}
+    >>> block = {"block_class": "LLMChatBlock", "parameters_used": {"model": "gpt-4"}}
     >>> is_llm_using_block(block)
     True
     """
-    block_type = block_info.get("block_type", "")
+    block_type = block_info.get("block_class", "")
 
     # Direct LLM blocks or evaluation/verification blocks
     if any(kw in block_type for kw in ["LLMChatBlock", "Evaluate", "Verify"]):
@@ -271,7 +271,7 @@ def estimate_execution_time(
             }
 
         # Calculate time for each block and sum them
-        total_estimated_time = 0
+        total_estimated_time: float = 0.0
         for block in blocks_executed:
             block_time = block.get("execution_time_seconds", 0)
             input_rows = block.get("input_rows", samples_1)

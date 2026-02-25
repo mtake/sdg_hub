@@ -34,9 +34,10 @@ dependencies = [
     "httpx>=0.25.0,<1.0.0",
     "jinja2",
     "litellm>=1.73.0,<2.0.0",         # raising cap since tests run without errors related to 'backoff' cap back to <1.75.0 if errors surface
+    "mcp>=1.8.0,<2.0.0",              # Model Context Protocol for MCP agent block (1.8.0+ for streamablehttp_client)
     "rich",
     "pandas",
-    "pydantic>=2.0.0,<3.0.0",         # cap before v3; adjust the lower bound to the minimum v2.x you’ve tested
+    "pydantic>=2.0.0,<3.0.0",         # cap before v3; adjust the lower bound to the minimum v2.x you've tested
     "python-dotenv>=1.0.0,<2.0.0",    # cap before v2 to avoid breaking changes
     "tenacity>=8.3.0,!=8.4.0",
     "tqdm>=4.66.2,<5.0.0",
@@ -53,18 +54,16 @@ issues = "https://github.com/Red-Hat-AI-Innovation-Team/sdg_hub/issues"
 [project.optional-dependencies]
 # Development and testing dependencies (lightweight, no ML libraries)
 dev = [
-    "pre-commit>=3.0.4,<4.0",
-    "pylint>=2.16.2,<4.0",
-    "pylint-pydantic",
+    "coverage>=7.0.0",
+    "mypy>=1.0.0",
+    "nbconvert>=7.0.0",
+    "pre-commit>=3.0.4,<5.0",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-html",
-    "tox>=4.4.2,<5",
-    "ruff",
     "pytest-env",
-    # Integration testing dependencies
-    "nbconvert>=7.0.0",
+    "pytest-html",
+    "ruff>=0.3.4",
 ]
 # Minimal dependencies for integration testing only
 # Integration tests run knowledge_generation.ipynb which only needs nest-asyncio
@@ -89,6 +88,9 @@ examples = [
     "ipykernel",
 ]
 
+[tool.uv]
+required-version = ">=0.10.0"
+
 [tool.setuptools_scm]
 version_file = "src/sdg_hub/_version.py"
 # do not include +gREV local version, required for Test PyPI upload
@@ -100,6 +102,9 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["sdg_hub"]
+
+[tool.setuptools.package-data]
+sdg_hub = ["flows/**/*.yaml", "flows/**/*.md"]
 
 [tool.ruff]
 target-version = "py310"

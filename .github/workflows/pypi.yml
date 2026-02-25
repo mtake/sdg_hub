@@ -1,0 +1,133 @@
+# SPDX-License-Identifier: Apache-2.0
+
+name: Build, test, and upload PyPI package
+
+on:
+    push:
+        branches:
+            - "main"
+            - "release-**"
+        tags:
+            - "v*"
+    pull_request:
+        branches:
+            - "main"
+            - "release-**"
+    release:
+        types:
+            - published
+
+env:
+    LC_ALL: en_US.UTF-8
+
+defaults:
+    run:
+        shell: bash
+
+permissions:
+    contents: read
+
+jobs:
+    # Create and verify release artifacts
+    # - build source dist (tar ball) and wheel
+    # - validate artifacts with various tools
+    # - upload artifacts to GHA
+    build-package:
+        name: Build and check packages
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Harden Runner"
+              uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+              with:
+                  egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+
+            - name: "Checkout"
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  # for setuptools-scm
+                  fetch-depth: 0
+
+            - name: "Build and Inspect"
+              uses: hynek/build-and-inspect-python-package@efb823f52190ad02594531168b7a2d5790e66516 # v2.14.0
+
+    # push to Test PyPI on
+    # - a new GitHub release is published
+    # - a PR is merged into main branch
+    publish-test-pypi:
+        name: Publish packages to test.pypi.org
+        # environment: publish-test-pypi
+        if: ${{ (github.repository_owner == 'Red-Hat-AI-Innovation-Team') && ((github.event.action == 'published') || ((github.event_name == 'push') && (github.ref == 'refs/heads/main'))) }}
+        permissions:
+            contents: read
+            # see https://docs.pypi.org/trusted-publishers/
+            id-token: write
+        runs-on: ubuntu-latest
+        needs: build-package
+
+        steps:
+            - name: "Harden Runner"
+              uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+              with:
+                  egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+            - name: "Download build artifacts"
+              uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+              with:
+                  name: Packages
+                  path: dist
+
+            - name: "Upload to Test PyPI"
+              uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+              with:
+                  repository-url: https://test.pypi.org/legacy/
+
+    # push to Production PyPI on
+    # - a new GitHub release is published
+    publish-pypi:
+        name: Publish release to pypi.org
+        # environment: publish-pypi
+        if: ${{ (github.repository_owner == 'Red-Hat-AI-Innovation-Team') && (github.event.action == 'published') }}
+        permissions:
+            # see https://docs.pypi.org/trusted-publishers/
+            id-token: write
+            # allow gh release upload
+            contents: write
+
+        runs-on: ubuntu-latest
+        needs: build-package
+
+        steps:
+            - name: "Harden Runner"
+              uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+              with:
+                  egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+            - name: "Download build artifacts"
+              uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+              with:
+                  name: Packages
+                  path: dist
+
+            - name: "Sigstore sign package"
+              uses: sigstore/gh-action-sigstore-python@a5caf349bc536fbef3668a10ed7f5cd309a4b53d # v3.2.0
+              with:
+                  inputs: |
+                      ./dist/*.tar.gz
+                      ./dist/*.whl
+                  release-signing-artifacts: false
+
+            - name: "Upload artifacts and signatures to GitHub release"
+              run: |
+                  gh release upload '${{ github.ref_name }}' dist/* --repo '${{ github.repository }}'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            # PyPI does not accept .sigstore artifacts and
+            # gh-action-pypi-publish has no option to ignore them.
+            - name: "Remove sigstore signatures before uploading to PyPI"
+              run: |
+                  rm ./dist/*.sigstore.json
+
+            - name: "Upload to PyPI"
+              uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0

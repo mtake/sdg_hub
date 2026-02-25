@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Requirements:** Python 3.9+
+**Requirements:** Python 3.10+
 
 SDG Hub is a Python framework for synthetic data generation using composable blocks and flows. Transform datasets through **building-block composition** - mix and match LLM-powered and traditional processing blocks like Lego pieces to create sophisticated data generation workflows.
 
@@ -19,12 +19,16 @@ SDG Hub is a Python framework for synthetic data generation using composable blo
 
 ### Setup and Installation
 ```bash
-# Install core dependencies
-uv pip install .
-
-# Install with development dependencies
+# Install with development dependencies (required for contributing)
 uv pip install .[dev]
 # Alternative: uv sync --extra dev
+
+# IMPORTANT: Always install pre-commit hooks after cloning
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Install core dependencies only (minimal install)
+uv pip install .
 
 # Install with optional vLLM support
 uv pip install .[vllm]
@@ -37,36 +41,46 @@ uv pip install .[examples]
 
 ### Testing
 ```bash
-# Run all tests
-tox -e py3-unit
+# Run all unit tests
+uv run pytest tests/blocks tests/connectors tests/flow tests/utils -m "not (examples or slow)"
 
 # Run tests with coverage
-tox -e py3-unitcov
+uv run pytest --cov=sdg_hub --cov-report=term tests/blocks tests/connectors tests/flow tests/utils
 
 # Run specific test file
-pytest tests/test_specific_file.py
+uv run pytest tests/test_specific_file.py
 
 # Run tests matching pattern
-pytest -k "test_pattern"
+uv run pytest -k "test_pattern"
+
+# Run integration tests (requires API keys)
+uv run pytest tests/integration -v -s
 ```
 
 ### Linting and Formatting
 ```bash
-# Run full verification (lint, mypy, ruff)
-make verify
+# Run ruff linter with auto-fix
+uv run ruff check --fix src/ tests/
 
-# Individual lint commands
-tox -e lint        # Full pylint check
-tox -e fastlint    # Fast pylint (without 3rd party)
-tox -e ruff        # Ruff formatting and fixes
-tox -e mypy        # Type checking
+# Run ruff formatter
+uv run ruff format src/ tests/
 
-# Format code with ruff
-tox -e ruff fix
+# Check only (no fixes) - same as CI
+uv run ruff check src/ tests/
+uv run ruff format --check src/ tests/
 
-# Check code formatting
-tox -e ruff check
+# Type checking
+uv run mypy src/
 ```
+
+### Pre-commit Hooks
+Pre-commit hooks run automatically on commit:
+- **uv-lock**: Keeps `uv.lock` in sync with `pyproject.toml`
+- **ruff**: Linter with auto-fix
+- **ruff-format**: Code formatter
+- **conventional-pre-commit**: Enforces [Conventional Commits](https://www.conventionalcommits.org/) format
+
+Commit message prefixes: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
 
 ### Other Make targets
 ```bash
@@ -85,14 +99,19 @@ The framework is built around a modular block system with **composability at its
   - `llm/`: LLM-powered blocks (chat, prompt building, text parsing) with async execution
   - `transform/`: Data transformation blocks (column operations, text manipulation)
   - `filtering/`: Data filtering blocks with quality thresholds
-  - `evaluation/`: Quality evaluation blocks (faithfulness, relevancy assessment)
+  - `agent/`: Agent framework integration blocks (Langflow, etc.)
 
 **Key Benefits**: Type-safe composition, automatic validation, rich logging, and high-performance async processing.
 
 ### Flow System
 Flows orchestrate multiple blocks into data processing pipelines:
 
-- **Flow** (`src/sdg_hub/core/flow/base.py`): Main flow execution class with Pydantic validation
+- **Flow** (`src/sdg_hub/core/flow/base.py`): Core Flow class with Pydantic validation
+- **FlowExecution** (`src/sdg_hub/core/flow/execution.py`): Flow execution logic (`generate()`, `run_dry_run()`)
+- **FlowSerialization** (`src/sdg_hub/core/flow/serialization.py`): YAML loading/saving (`from_yaml()`)
+- **FlowDisplay** (`src/sdg_hub/core/flow/display.py`): Rich console display (`info()` methods)
+- **FlowModelConfig** (`src/sdg_hub/core/flow/model_config.py`): LLM model configuration helpers
+- **FlowCheckpointer** (`src/sdg_hub/core/flow/checkpointer.py`): Flow checkpointing for resumable execution
 - **FlowRegistry** (`src/sdg_hub/core/flow/registry.py`): Registry for flow discovery
 - **FlowMetadata** (`src/sdg_hub/core/flow/metadata.py`): Metadata and parameter definitions
 - **FlowValidator** (`src/sdg_hub/core/flow/validation.py`): YAML structure validation
@@ -122,12 +141,53 @@ blocks:
 ### Built-in Flow Discovery
 The framework includes auto-discovery for flows in `src/sdg_hub/flows/`. Example flow structure:
 ```
-flows/qa_generation/document_grounded_qa/multi_summary_qa/instructlab/
-├── flow.yaml                    # Main flow definition
-├── atomic_facts.yaml           # Sub-flow configurations
-├── detailed_summary.yaml
-└── generate_questions_responses.yaml
+flows/knowledge_infusion/enhanced_multi_summary_qa/
+├── extractive_summary/
+│   ├── flow.yaml               # Extractive summary flow
+│   └── prompts/                # Prompt configurations
+├── detailed_summary/
+│   ├── flow.yaml               # Detailed summary flow
+│   └── prompts/
+├── key_facts/
+│   ├── flow.yaml               # Key facts flow
+│   └── prompts/
+└── doc_direct_qa/
+    ├── flow.yaml               # Document-based flow
+    └── prompts/
 ```
+
+### Connector System
+Connectors handle communication with external agent frameworks:
+
+- **BaseConnector** (`src/sdg_hub/core/connectors/base.py`): Abstract base for all connectors
+- **ConnectorRegistry** (`src/sdg_hub/core/connectors/registry.py`): Auto-discovery for connectors
+- **BaseAgentConnector** (`src/sdg_hub/core/connectors/agent/base.py`): Base class for agent framework connectors
+
+**Supported Agent Frameworks:**
+- **Langflow** (`src/sdg_hub/core/connectors/agent/langflow.py`): Visual LLM app builder
+
+**Using AgentBlock:**
+```python
+from sdg_hub.core.blocks.agent import AgentBlock
+
+block = AgentBlock(
+    block_name="my_agent",
+    agent_framework="langflow",  # Connector name from registry
+    agent_url="http://localhost:7860/api/v1/run/my-flow",
+    agent_api_key="your-api-key",  # Optional
+    input_cols=["question"],
+    output_cols=["response"],
+    extract_response=True,  # Extract text from response (Langflow-specific)
+)
+
+result = block.generate(dataset)
+```
+
+**Adding New Connectors:**
+1. Create a new file in `src/sdg_hub/core/connectors/agent/`
+2. Inherit from `BaseAgentConnector`
+3. Implement `build_request()` and `parse_response()` methods
+4. Register with `@ConnectorRegistry.register("name")`
 
 ## Key Patterns
 
@@ -157,8 +217,24 @@ All blocks operate on HuggingFace `datasets.Dataset` objects:
 
 ## Important Notes
 
+- **First-time setup**: Always run `uv run pre-commit install && uv run pre-commit install --hook-type commit-msg` after cloning
 - Always use `uv` for Python package management
 - The framework uses Pydantic extensively for validation and configuration
 - LLM clients are managed through the `client_manager.py` system
 - Path resolution is handled centrally in `utils/path_resolution.py`
 - Error handling follows custom exception patterns in `utils/error_handling.py`
+
+## CI Requirements
+
+All PRs must pass these checks before merging:
+
+| Check | Command | Workflow |
+|-------|---------|----------|
+| Conventional Commits | `commitlint` | commitlint.yml |
+| Ruff formatting | `ruff format --check src/ tests/` | lint.yml |
+| Ruff linting | `ruff check src/ tests/` | lint.yml |
+| Type checking | `mypy src/sdg_hub` | lint.yml |
+| Unit tests | `pytest tests/blocks tests/connectors tests/flow tests/utils` | test.yml |
+| Lock file sync | `uv lock --check` | lock.yml |
+| Markdown linting | `markdownlint-cli2` | docs.yml |
+| GitHub Actions lint | `actionlint` | actionlint.yml |

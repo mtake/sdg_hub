@@ -4,8 +4,9 @@
 # Standard
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import os
+import warnings
 
 # Third Party
 from rich.console import Console
@@ -18,6 +19,18 @@ from ..utils.yaml_utils import save_flow_yaml
 from .metadata import FlowMetadata
 
 logger = setup_logger(__name__)
+
+# Deprecated flows mapping: flow name/id -> (deprecation message, suggested alternative)
+DEPRECATED_FLOWS: Dict[str, Tuple[str, Optional[str]]] = {
+    "Advanced Document Grounded Question-Answer Generation Flow for Knowledge Tuning": (
+        "The InstructLab Multi-Summary QA flow has been deprecated and removed.",
+        "enhanced_summary_knowledge_tuning",
+    ),
+    "instructlab-knowledge-tuning": (
+        "The InstructLab Multi-Summary QA flow has been deprecated and removed.",
+        "enhanced_summary_knowledge_tuning",
+    ),
+}
 
 
 @dataclass
@@ -132,7 +145,7 @@ class FlowRegistry:
                         flow_config["metadata"]["id"] = metadata.id
 
                         save_flow_yaml(
-                            yaml_file,
+                            str(yaml_file),
                             flow_config,
                             f"updated with generated id: {metadata.id}",
                         )
@@ -145,6 +158,23 @@ class FlowRegistry:
 
             except Exception as exc:
                 logger.debug(f"Skipped {yaml_file}: {exc}")
+
+    @classmethod
+    def _check_deprecated_flow(cls, flow_name_or_id: str) -> None:
+        """Check if a flow is deprecated and emit a warning if so.
+
+        Parameters
+        ----------
+        flow_name_or_id : str
+            The flow name or id to check.
+        """
+        if flow_name_or_id in DEPRECATED_FLOWS:
+            message, alternative = DEPRECATED_FLOWS[flow_name_or_id]
+            warning_msg = f"DeprecationWarning: {message}"
+            if alternative:
+                warning_msg += f" Consider using '{alternative}' instead."
+            warnings.warn(warning_msg, DeprecationWarning, stacklevel=3)
+            logger.warning(warning_msg)
 
     @classmethod
     def get_flow_path(cls, flow_name_or_id: str) -> Optional[str]:
@@ -165,6 +195,9 @@ class FlowRegistry:
         """
         cls._ensure_initialized()
         cls._discover_flows()
+
+        # Check if this is a deprecated flow
+        cls._check_deprecated_flow(flow_name_or_id)
 
         # First try to find by id (preferred)
         for entry in cls._entries.values():
@@ -316,7 +349,7 @@ class FlowRegistry:
         cls._ensure_initialized()
         cls._discover_flows()
 
-        categories = {}
+        categories: dict[str, list[dict[str, str]]] = {}
 
         for entry in cls._entries.values():
             metadata = entry.metadata

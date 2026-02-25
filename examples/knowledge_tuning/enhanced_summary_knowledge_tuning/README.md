@@ -60,7 +60,10 @@ Only claims passing this check are retained. This process filters out **hallucin
 
 For each document, we generate three augmentation types—detailed summaries, extractive summaries, and atomic facts. Each “cut” on the table below represents the total number of summary augmentations per document (i.e., how many times each augmentation process is run).
 
-| Cut (NUMBER\_OF\_SUMMARIES = 3) | Token Count   |
+<table>
+  <caption><b>Table 1: Token count statistics for different numbers ("cuts") of summary augmentations per document.</b></caption>
+  
+| Cut (NUMBER\_OF\_SUMMARIES) | Token Count   |
 | ------------------------------- | ------------- |
 | Input Corpus                    | 1,517,465     |
 | 10                              | 87,248,889    |
@@ -68,6 +71,8 @@ For each document, we generate three augmentation types—detailed summaries, ex
 | 30                              | 230,306,195   |
 | 40                              | 301,805,906   |
 | 50                              | 373,183,414   |
+</table>
+
 
 ---
 
@@ -78,8 +83,91 @@ For each document, we generate three augmentation types—detailed summaries, ex
 - **Student model:** meta-llama/Llama-3.1-8B-Instruct (after SFT on generated/augmented summaries)
 - **Performance metric:** Model accuracy
 
-![Quality Benchmark Accuracy](imgs/quality_benchmark_accuracy.png)
+<p align="center">
+  <img src="imgs/quality_benchmark_accuracy.png" alt="Quality Benchmark Accuracy" />
+</p>
 
-*Figure: Model accuracy across the QuALITY benchmark datasets, comparing SFT training on enhanced document summaries with the original model performance.*
+<p align="center">
+  <em>Figure: Model accuracy across the QuALITY benchmark datasets, comparing SFT training on enhanced document summaries with the original model performance.</em>
+</p>
 
 ---
+
+### Continued Pre-training (CPT): Data Generation and Accuracy
+
+We performed continued pre-training (CPT) using next-token prediction on augmented documents, without applying any chat template for the model input. To improve generalization and mitigate overfitting, we incorporated **RedPajama v2** data as a replay buffer, constituting 10% of the total input tokens.
+
+<table>
+  <caption><b>Table 2: CPT data scaling and resulting model accuracy. Higher augmentation "cuts" correspond to increased training data and performance.</b></caption>
+  
+| Cut (NUMBER\_OF\_SUMMARIES) | Token Count  | Accuracy (%) | Method     |
+|-----------------------------|--------------|--------------|------------|
+| Input Corpus                | 1,517,465    | 43.67        | Baseline   |
+| 50                          | 373,183,414  | 51.64        | SFT        |
+| 25                          | 42,904,412   | 56.77        | CPT        |
+| 50                          | 83,750,884   | 57.49        | CPT        |
+</table>
+
+Notes:
+- CPT shows signs of overfitting at higher token count (number of summaries) on knowledge data.
+- We use red pajama mix to prevent some of this overfitting.
+
+---
+
+## Multilingual Support
+
+The knowledge generation notebook supports generating training data in **any language**. Translated flow variants are resolved automatically — if a pre-translated flow exists it is used directly, otherwise `translate_flow()` creates one on-demand using an LLM.
+
+### Quick Start
+
+1. Copy `.env.example` to `.env` and configure your model endpoint.
+2. Set the multilingual variables:
+
+   ```dotenv
+   SDG_LANG=Spanish
+   SDG_LANG_CODE=es
+   ```
+
+3. Run `knowledge_generation.ipynb` as normal. The notebook detects these variables and uses translated flows.
+
+To revert to English, remove or leave `SDG_LANG` empty.
+
+### Configuration Reference
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `SDG_LANG` | Target language name (empty = English) | `Spanish`, `French`, `Japanese` |
+| `SDG_LANG_CODE` | ISO 639-1 language code | `es`, `fr`, `ja` |
+| `TRANSLATED_FLOWS_DIR` | Directory with pre-translated flows (optional) | `./translated_flows` |
+| `TRANSLATOR_MODEL` | LLM for translation (litellm format) | `openai/gpt-4o` |
+| `TRANSLATOR_API_KEY` | API key for translator model | |
+| `TRANSLATOR_API_BASE` | Custom API base URL (optional) | |
+| `VERIFIER_MODEL` | LLM for translation verification | `openai/gpt-4o` |
+| `VERIFIER_API_KEY` | API key for verifier (if different) | |
+| `VERIFIER_API_BASE` | Custom API base URL for verifier (optional) | |
+
+### How It Works
+
+1. The notebook reads `SDG_LANG` and `SDG_LANG_CODE` from the environment.
+2. For each of the four generation flows (extractive summary, detailed summary, key facts, document-based Q\&A), it checks `FlowRegistry` for a translated variant named `<Flow Name> (<Language>)`.
+3. If found, it uses the existing translated flow. If not, it calls `translate_flow()` which:
+   - Translates all prompt YAMLs using the configured translator model.
+   - Verifies each translation with a second LLM pass.
+   - Creates an adapted `flow.yaml` with updated metadata and prompt paths.
+   - Registers the new flow with `FlowRegistry` for immediate use.
+
+### Pre-translated Flows
+
+The repository ships with **Spanish (`es`)** flows under `src/sdg_hub/flows/knowledge_infusion/enhanced_multi_summary_qa_es/`. These are auto-discovered and require no extra setup — just set `SDG_LANG=Spanish` and `SDG_LANG_CODE=es`.
+
+### Spanish Translated QuALITY Benchmark Results
+
+We evaluated Spanish knowledge tuning using the same QuALITY benchmark (translated to Spanish), comparing a baseline Llama-3.1-8B-Instruct model against SFT and OSFT variants trained on Spanish-translated synthetic data.
+
+<p align="center">
+  <img src="imgs/rag_context_sweep_comparison_spanish.png" alt="Spanish Translated QuALITY Performance" />
+</p>
+
+<p align="center">
+  <em>Figure: Spanish QuALITY benchmark accuracy across retrieved context sizes. SFT on translated data yields consistent gains over the baseline in both open-book and closed-book settings.</em>
+</p>
