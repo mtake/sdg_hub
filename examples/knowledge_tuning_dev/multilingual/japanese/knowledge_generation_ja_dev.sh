@@ -16,17 +16,15 @@ LOGFILE="${BASENAME}-${START_TIME_STR}-${HOSTNAME_S}.log"
 echo "XXX LOGFILE ${LOGFILE}" | tee -a ${LOGFILE}
 echo "XXX DATETIME ${START_TIME_STR}" | tee -a ${LOGFILE}
 
-VENV_ACTIVATE=../../../../.venv/bin/activate
-if [[ -f "${VENV_ACTIVATE}" ]]; then
-    cmd="source ${VENV_ACTIVATE}"
-    echo "$cmd" | tee -a ${LOGFILE}
-    eval "$cmd" 2>&1 | tee -a ${LOGFILE}
+VENV=../../../../.venv
+if [[ -d "${VENV}" ]]; then
+    PYTHON_CMD="${VENV}/bin/python"
 fi
 
 ENV=""
 #ENV="TOKENIZERS_PARALLELISM=false ${ENV}"
 #ENV="PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True ${ENV}"
-cmd="${ENV}python ${BASENAME}.py"
+cmd="${ENV}${PYTHON_CMD:-python} ${BASENAME}.py"
 echo "$cmd" | tee -a ${LOGFILE}
 eval "$cmd" 2>&1 | tee -a ${LOGFILE}
 
